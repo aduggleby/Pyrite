@@ -280,35 +280,35 @@ Success criteria:
 
 ### Functional Requirements
 
-- [ ] User can log in with env-configured username and SHA-256 password hash.
-- [ ] Session uses a sliding 7-day expiration with a secure HTTP-only cookie.
-- [ ] User can browse the mounted vault as a file/folder tree.
-- [ ] User can open, edit, preview, and save markdown notes directly in place.
-- [ ] User can search note contents and filenames across the vault.
-- [ ] User can follow wikilinks and inspect backlinks.
-- [ ] User can view tags and task-list capable notes.
-- [ ] User can upload attachments into the vault from the web UI.
-- [ ] User is warned when a note changed externally while being edited.
-- [ ] User can review and approve a highlighted 3-way merge result before committing a conflicted save.
-- [ ] Unsafe authenticated requests require a valid antiforgery token.
+- [x] User can log in with env-configured username and SHA-256 password hash.
+- [x] Session uses a sliding 7-day expiration with a secure HTTP-only cookie.
+- [x] User can browse the mounted vault as a file/folder tree.
+- [x] User can open, edit, preview, and save markdown notes directly in place.
+- [x] User can search note contents and filenames across the vault.
+- [x] User can follow wikilinks and inspect backlinks.
+- [x] User can view tags and task-list capable notes.
+- [x] User can upload attachments into the vault from the web UI.
+- [x] User is warned when a note changed externally while being edited.
+- [x] User can review and approve a highlighted 3-way merge result before committing a conflicted save.
+- [x] Unsafe authenticated requests require a valid antiforgery token.
 
 ### Non-Functional Requirements
 
-- [ ] App runs without a database.
-- [ ] App ships as a single container suitable for TrueNAS custom YAML deployment.
-- [ ] Backend prevents path traversal and writes outside the mounted vault.
-- [ ] Login is rate limited.
-- [ ] Cookie-authenticated unsafe requests are CSRF-protected.
-- [ ] Production deployment assumes TLS at the reverse proxy and supports a second proxy-level gate.
-- [ ] Mobile viewports are the primary UX target.
+- [x] App runs without a database.
+- [x] App ships as a single container suitable for TrueNAS custom YAML deployment.
+- [x] Backend prevents path traversal and writes outside the mounted vault.
+- [x] Login is rate limited.
+- [x] Cookie-authenticated unsafe requests are CSRF-protected.
+- [x] Production deployment assumes TLS at the reverse proxy and supports a second proxy-level gate.
+- [x] Mobile viewports are the primary UX target.
 
 ### Quality Gates
 
-- [ ] Backend tests cover auth, hash compatibility, path safety, note IO, conflict detection, and merge paths.
-- [ ] Backend tests cover antiforgery enforcement and attachment naming/path safety.
-- [ ] Frontend tests cover core routing and critical UI states.
-- [ ] At least one browser E2E path covers login, open note, edit/save, upload, and conflict review.
-- [ ] README documents installation, config, and security assumptions.
+- [x] Backend tests cover auth, hash compatibility, path safety, note IO, conflict detection, and merge paths.
+- [x] Backend tests cover antiforgery enforcement and attachment naming/path safety.
+- [x] Frontend tests cover core routing and critical UI states.
+- [x] At least one browser E2E path covers login, open note, edit/save, upload, and conflict review.
+- [x] README documents installation, config, and security assumptions.
 
 ## Dependencies & Risks
 

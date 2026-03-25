@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-PYRITE-CSRF";
-    options.Cookie.Name = "__Host-pyrite-csrf";
+    options.Cookie.Name = builder.Environment.IsDevelopment() ? "pyrite-csrf" : "__Host-pyrite-csrf";
     options.Cookie.HttpOnly = false;
     options.Cookie.SameSite = SameSiteMode.Strict;
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
@@ -53,7 +53,7 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = "__Host-pyrite-auth";
+        options.Cookie.Name = builder.Environment.IsDevelopment() ? "pyrite-auth" : "__Host-pyrite-auth";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;

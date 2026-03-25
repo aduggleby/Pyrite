@@ -1,0 +1,12 @@
+.git
+.gitignore
+.playwright-mcp
+designs
+example-com.png
+node_modules
+src/pyrite-web/node_modules
+src/Pyrite.Api/bin
+src/Pyrite.Api/obj
+tests/Pyrite.Api.Tests/bin
+tests/Pyrite.Api.Tests/obj
+src/Pyrite.Api/wwwroot

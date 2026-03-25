@@ -35,6 +35,7 @@ bin/
 obj/
 TestResults/
 artifacts/
+src/Pyrite.Api/wwwroot/
 *.user
 *.rsuser
 *.suo
