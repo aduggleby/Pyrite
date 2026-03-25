@@ -71,6 +71,19 @@ export async function login(username: string, password: string) {
   return response
 }
 
+export async function developmentLogin() {
+  const response = await request<SessionResponse>(
+    '/api/auth/dev-login',
+    {
+      method: 'POST',
+    },
+  )
+
+  const token = await fetchAntiforgeryToken()
+  csrfToken = token.requestToken
+  return response
+}
+
 export async function logout() {
   return request<void>('/api/auth/logout', { method: 'POST' }, true)
 }

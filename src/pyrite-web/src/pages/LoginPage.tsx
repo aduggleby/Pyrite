@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { login } from '../lib/api'
+import { developmentLogin, login } from '../lib/api'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -10,6 +10,13 @@ export function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: () => login(username, password),
+    onSuccess: () => {
+      void navigate({ to: '/' })
+    },
+  })
+
+  const developmentLoginMutation = useMutation({
+    mutationFn: developmentLogin,
     onSuccess: () => {
       void navigate({ to: '/' })
     },
@@ -40,7 +47,18 @@ export function LoginPage() {
           <button className="primary-button" type="submit" disabled={loginMutation.isPending}>
             Log In
           </button>
+          {import.meta.env.DEV ? (
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={developmentLoginMutation.isPending}
+              onClick={() => developmentLoginMutation.mutate()}
+            >
+              Use Development Login
+            </button>
+          ) : null}
           {loginMutation.isError ? <p className="note-subtitle">Login failed. Check the credentials and server setup.</p> : null}
+          {developmentLoginMutation.isError ? <p className="note-subtitle">Development login is only available in development.</p> : null}
         </form>
       </section>
     </main>

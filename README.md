@@ -44,13 +44,14 @@ The recommended local workflow runs everything in Docker against a copied seed v
 ./run-dev.sh
 ```
 
-This starts two containers and opens a `tmux` session with split log panes:
+This starts a live-reload development stack and opens a `tmux` session with split log panes:
 
-- `pyrite-dev`: the Pyrite app on `http://localhost:18100`
+- `pyrite-dev-api`: ASP.NET backend with `dotnet watch` on `http://localhost:18100`
+- `pyrite-dev-web`: Vite dev server with frontend HMR on `http://localhost:18110`
 - `pyrite-dev-vault`: a sidecar shell container that mounts the same `/vault`
 - `logs/dev/run-dev.log`: the dev launcher output
-- `logs/dev/pyrite-container.log`: `docker compose logs -f pyrite`
-- `logs/dev/vault-sidecar-container.log`: `docker compose logs -f vault-sidecar`
+- `logs/dev/pyrite-api-container.log`: `docker compose logs -f pyrite`
+- `logs/dev/pyrite-web-container.log`: `docker compose logs -f pyrite-web`
 - `logs/dev/pyrite-api.log`: application file log output from inside the app container
 
 The sidecar is useful for inspecting or modifying the mounted vault while Pyrite is running:
@@ -63,7 +64,7 @@ The committed seed vault lives in [`dev/duck-vault`](/home/alex/Source/Pyrite/de
 
 `./run-dev.sh` copies that seed vault into `.dev-workspace/duck-vault` the first time it runs. After that, the workspace persists across restarts so edits remain available.
 
-Every `./run-dev.sh` invocation clears `logs/dev/` before the stack starts. For automation, set `PYRITE_NO_TMUX=1` to skip the interactive `tmux` attach.
+Every `./run-dev.sh` invocation clears `logs/dev/` before the stack starts. Frontend source edits are served through Vite HMR, and backend source edits reload through `dotnet watch`. For automation, set `PYRITE_NO_TMUX=1` to skip the interactive `tmux` attach.
 
 Stop the dev stack:
 
@@ -130,8 +131,7 @@ npm test
 Browser E2E:
 
 ```bash
-cd src/pyrite-web
-npm run test:e2e
+./test-app.sh
 ```
 
 ## Docker

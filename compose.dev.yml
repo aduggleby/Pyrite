@@ -1,23 +1,45 @@
 services:
   pyrite:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: pyrite-dev
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: pyrite-dev-api
     user: "${PYRITE_UID:-1000}:${PYRITE_GID:-1000}"
+    working_dir: /workspace
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:18100
-      PYRITE_LOGS_DIR: /logs
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      HOME: /workspace/.dev-workspace/dotnet-home
+      NUGET_PACKAGES: /workspace/.dev-workspace/dotnet-home/.nuget/packages
+      PYRITE_LOGS_DIR: /workspace/logs
       Pyrite__VaultRoot: /vault
       Pyrite__Auth__Username: alex
       Pyrite__Auth__PasswordSha256: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
       Pyrite__Uploads__MaxBytes: 10000000
+    command: ["dotnet", "watch", "--project", "src/Pyrite.Api/Pyrite.Api.csproj", "run", "--no-launch-profile", "--urls", "http://0.0.0.0:18100"]
     ports:
       - "18100:18100"
     volumes:
+      - ./:/workspace
       - ./.dev-workspace/duck-vault:/vault
-      - ./logs:/logs
+    restart: unless-stopped
+
+  pyrite-web:
+    image: node:25-alpine
+    container_name: pyrite-dev-web
+    user: "${PYRITE_UID:-1000}:${PYRITE_GID:-1000}"
+    working_dir: /workspace/src/pyrite-web
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      HOME: /workspace/.dev-workspace/node-home
+      VITE_API_PROXY_TARGET: http://pyrite:18100
+    command: ["sh", "-lc", "npm ci && npm run dev -- --host 0.0.0.0 --port 18110"]
+    ports:
+      - "18110:18110"
+    depends_on:
+      - pyrite
+    volumes:
+      - ./:/workspace
+      - ./.dev-workspace/pyrite-web-node-modules:/workspace/src/pyrite-web/node_modules
     restart: unless-stopped
 
   vault-sidecar:

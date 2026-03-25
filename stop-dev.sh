@@ -30,7 +30,7 @@ fi
 
 if [[ "$RESET_VOLUMES" == true ]]; then
   printf 'Resetting workspace vault from seed data...\n'
-  docker run --rm -v "$ROOT_DIR:/repo" alpine:3.22 sh -c 'rm -rf /repo/.dev-workspace/duck-vault'
+  docker run --rm -v "$ROOT_DIR:/repo" alpine:3.22 sh -c 'rm -rf /repo/.dev-workspace'
   mkdir -p "$WORKSPACE_DIR"
   cp -R "$SEED_DIR" "$WORKSPACE_VAULT_DIR"
 fi

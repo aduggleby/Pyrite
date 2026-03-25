@@ -104,6 +104,7 @@ builder.Services.Configure<FormOptions>(options =>
 });
 
 builder.Services.AddSingleton<PasswordHashService>();
+builder.Services.AddSingleton<AuthSessionService>();
 builder.Services.AddSingleton<PathSafetyService>();
 builder.Services.AddSingleton<RequestSecurityService>();
 builder.Services.AddSingleton<MarkdownService>();

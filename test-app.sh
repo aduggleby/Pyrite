@@ -15,7 +15,7 @@ PYRITE_NO_TMUX=1 "$ROOT_DIR/run-dev.sh" >/dev/null
 
 printf 'Waiting for app readiness...\n'
 for _ in $(seq 1 60); do
-  if curl -fsS "http://127.0.0.1:18100/api/auth/session" >/dev/null; then
+  if curl -fsS "http://127.0.0.1:18100/api/auth/session" >/dev/null && curl -fsS "http://127.0.0.1:18110" >/dev/null; then
     break
   fi
   sleep 1

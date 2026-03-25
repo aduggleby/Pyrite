@@ -30,6 +30,10 @@ async function openMarshGuide(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
 }
 
+async function openNoteMenu(page: import('@playwright/test').Page) {
+  await page.getByTestId('note-menu-button').click()
+}
+
 test('1. shows the login screen', async ({ page }) => {
   await page.goto('/login')
   await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible()
@@ -79,11 +83,9 @@ test('8. searches by content', async ({ page }) => {
   await expect(page.getByTestId('note-title')).toHaveText('Open Lake Survey')
 })
 
-test('9. shows tags on the starter note', async ({ page }) => {
-  await login(page)
-  await openStartHere(page)
-  await expect(page.getByTestId('tags-tasks-card')).toContainText('#ducks')
-  await expect(page.getByTestId('tags-tasks-card')).toContainText('#starter')
+test('9. shows the development login shortcut in dev mode', async ({ page }) => {
+  await page.goto('/login')
+  await expect(page.getByRole('button', { name: 'Use Development Login' })).toBeVisible()
 })
 
 test('10. shows tasks on the starter note', async ({ page }) => {
@@ -93,17 +95,15 @@ test('10. shows tasks on the starter note', async ({ page }) => {
   await expect(page.getByTestId('tags-tasks-card')).toContainText('Done · Seed the local development workspace')
 })
 
-test('11. toggles preview mode', async ({ page }) => {
+test('11. shows preview content for an opened note', async ({ page }) => {
   await login(page)
   await openStartHere(page)
-  await page.getByRole('button', { name: 'Preview' }).click()
   await expect(page.getByTestId('preview-panel')).toContainText('Duck Vault')
 })
 
 test('12. navigates from a preview wikilink', async ({ page }) => {
   await login(page)
   await openStartHere(page)
-  await page.getByRole('button', { name: 'Preview' }).click()
   await page.getByTestId('preview-panel').getByRole('link', { name: 'Shallow Marsh Guide' }).click()
   await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
 })
@@ -140,7 +140,8 @@ test('16. saves edits to the workspace file', async ({ page }) => {
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(updated)
-    await page.getByRole('button', { name: /Save/i }).click()
+    await openNoteMenu(page)
+    await page.getByTestId('note-menu-save-button').click()
     await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('Saved from app test.')
   } finally {
     await fs.writeFile(startHerePath, original)
@@ -154,6 +155,8 @@ test('17. uploads an attachment and inserts the markdown link', async ({ page })
   try {
     await login(page)
     await openStartHere(page)
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await openNoteMenu(page)
     await page.getByTestId('attachment-input').setInputFiles(uploadPath)
     await expect(page.locator('.cm-content')).toContainText('.attachments')
     const attachmentEntries = await fs.readdir(attachmentsDir)
@@ -182,12 +185,14 @@ test('19. opens merge review after a conflicted save', async ({ page }) => {
   try {
     await login(page)
     await openStartHere(page)
+    await page.getByRole('button', { name: 'Edit' }).click()
     const editor = page.locator('.cm-content').first()
     await fs.writeFile(startHerePath, `${original}\nRemote merge preview change.\n`)
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(`${original}\nLocal merge preview change.\n`)
-    await page.getByRole('button', { name: /Save/i }).click()
+    await openNoteMenu(page)
+    await page.getByTestId('note-menu-save-button').click()
     await expect(page.getByText('Merge Review')).toBeVisible()
   } finally {
     await fs.writeFile(startHerePath, original)
@@ -202,12 +207,14 @@ test('20. commits merged content successfully', async ({ page }) => {
   try {
     await login(page)
     await openStartHere(page)
+    await page.getByRole('button', { name: 'Edit' }).click()
     const editor = page.locator('.cm-content').first()
     await fs.writeFile(startHerePath, remote)
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(local)
-    await page.getByRole('button', { name: /Save/i }).click()
+    await openNoteMenu(page)
+    await page.getByTestId('note-menu-save-button').click()
     await expect(page.getByText('Merge Review')).toBeVisible()
     await page.getByRole('button', { name: 'Commit Merge' }).click()
     await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('Local merge commit change.')

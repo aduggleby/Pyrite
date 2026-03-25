@@ -3,7 +3,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+export default defineConfig(() => ({
   plugins: [react()],
   build: {
     outDir: '../Pyrite.Api/wwwroot',
@@ -13,7 +13,7 @@ export default defineConfig({
     port: 18110,
     proxy: {
       '/api': {
-        target: 'http://localhost:18100',
+        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:18100',
         changeOrigin: true,
       },
     },
@@ -24,4 +24,4 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     exclude: ['e2e/**', 'node_modules/**'],
   },
-})
+}))

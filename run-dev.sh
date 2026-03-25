@@ -5,6 +5,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SEED_DIR="$ROOT_DIR/dev/duck-vault"
 WORKSPACE_DIR="$ROOT_DIR/.dev-workspace"
 WORKSPACE_VAULT_DIR="$WORKSPACE_DIR/duck-vault"
+DOTNET_HOME_DIR="$WORKSPACE_DIR/dotnet-home"
+NODE_HOME_DIR="$WORKSPACE_DIR/node-home"
+NODE_MODULES_DIR="$WORKSPACE_DIR/pyrite-web-node-modules"
 LOGS_DIR="$ROOT_DIR/logs"
 DEV_LOG_DIR="$LOGS_DIR/dev"
 RUN_LOG_FILE="$DEV_LOG_DIR/run-dev.log"
@@ -13,8 +16,19 @@ COMPOSE_FILE="$ROOT_DIR/compose.dev.yml"
 USE_TMUX="${PYRITE_NO_TMUX:-0}"
 DETACH_TMUX="${PYRITE_TMUX_DETACH:-0}"
 
+ensure_port_available() {
+  local port="$1"
+
+  if lsof -iTCP:"$port" -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+    printf 'Port %s is already in use. Stop the existing process before running ./run-dev.sh.\n' "$port" >&2
+    lsof -iTCP:"$port" -sTCP:LISTEN -n -P >&2 || true
+    exit 1
+  fi
+}
+
 ensure_workspace() {
   mkdir -p "$WORKSPACE_DIR"
+  mkdir -p "$DOTNET_HOME_DIR" "$NODE_HOME_DIR" "$NODE_MODULES_DIR"
 
   if [[ ! -d "$WORKSPACE_VAULT_DIR" ]]; then
     cp -R "$SEED_DIR" "$WORKSPACE_VAULT_DIR"
@@ -27,20 +41,20 @@ reset_dev_logs() {
 }
 
 start_tmux_logs() {
-  local pyrite_container_log="$DEV_LOG_DIR/pyrite-container.log"
-  local vault_container_log="$DEV_LOG_DIR/vault-sidecar-container.log"
+  local pyrite_container_log="$DEV_LOG_DIR/pyrite-api-container.log"
+  local frontend_container_log="$DEV_LOG_DIR/pyrite-web-container.log"
   local api_log="$DEV_LOG_DIR/pyrite-api.log"
   local first_pane_id
   local second_pane_id
 
   tmux has-session -t "$SESSION_NAME" 2>/dev/null && tmux kill-session -t "$SESSION_NAME"
-  touch "$pyrite_container_log" "$vault_container_log" "$api_log"
+  touch "$pyrite_container_log" "$frontend_container_log" "$api_log"
 
   first_pane_id="$(tmux new-session -d -P -F '#{pane_id}' -s "$SESSION_NAME" -n logs \
     "bash -lc 'cd \"$ROOT_DIR\" && docker compose -f \"$COMPOSE_FILE\" logs -f pyrite | tee \"$pyrite_container_log\"'"
   )"
   second_pane_id="$(tmux split-window -h -P -F '#{pane_id}' -t "$first_pane_id" \
-    "bash -lc 'cd \"$ROOT_DIR\" && docker compose -f \"$COMPOSE_FILE\" logs -f vault-sidecar | tee \"$vault_container_log\"'")"
+    "bash -lc 'cd \"$ROOT_DIR\" && docker compose -f \"$COMPOSE_FILE\" logs -f pyrite-web | tee \"$frontend_container_log\"'")"
   tmux split-window -v -P -F '#{pane_id}' -t "$first_pane_id" \
     "bash -lc 'touch \"$api_log\" && tail -n 200 -F \"$api_log\"'" >/dev/null
   tmux split-window -v -P -F '#{pane_id}' -t "$second_pane_id" \
@@ -61,6 +75,8 @@ exec > >(tee "$RUN_LOG_FILE") 2>&1
 
 printf 'Preparing workspace...\n'
 ensure_workspace
+ensure_port_available 18100
+ensure_port_available 18110
 
 PYRITE_UID="$(id -u)"
 PYRITE_GID="$(id -g)"
@@ -68,10 +84,11 @@ export PYRITE_UID
 export PYRITE_GID
 
 printf 'Starting Docker dev stack...\n'
-docker compose -f "$COMPOSE_FILE" up --build -d
+docker compose -f "$COMPOSE_FILE" up -d
 
 printf 'Pyrite dev stack is running.\n'
-printf 'App: http://localhost:18100\n'
+printf 'App: http://localhost:18110\n'
+printf 'API: http://localhost:18100\n'
 printf 'Vault workspace: %s\n' "$WORKSPACE_VAULT_DIR"
 printf 'Logs: %s\n' "$DEV_LOG_DIR"
 

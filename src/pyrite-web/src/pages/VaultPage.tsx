@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
-import { FileUp, LogOut, Save, Search } from 'lucide-react'
+import { FileText, FileUp, Folder, LogOut, MoreVertical, Pencil, Save, Search } from 'lucide-react'
 import {
   commitMerge,
   fetchMergePreview,
@@ -20,15 +20,16 @@ import { MergeReviewDialog } from '../components/MergeReviewDialog'
 import { VaultTree } from '../components/VaultTree'
 import type { MergePreviewResponse } from '../types'
 
-type EditorMode = 'edit' | 'preview'
+type MobileTab = 'vault' | 'note' | 'edit' | 'search'
 
 export function VaultPage() {
   const navigate = useNavigate()
   const search = useSearch({ from: '/' })
   const queryClient = useQueryClient()
-  const [mode, setMode] = useState<EditorMode>('edit')
+  const [activeTab, setActiveTab] = useState<MobileTab>('vault')
   const [draft, setDraft] = useState('')
   const [mergePreview, setMergePreview] = useState<MergePreviewResponse | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const sessionQuery = useQuery({
     queryKey: ['session'],
@@ -71,6 +72,13 @@ export function VaultPage() {
       setDraft(noteQuery.data.content)
     }
   }, [noteQuery.data?.path, noteQuery.data?.versionToken])
+
+  // When a note is selected, switch to preview tab
+  useEffect(() => {
+    if (search.path) {
+      setActiveTab('note')
+    }
+  }, [search.path])
 
   const logoutMutation = useMutation({
     mutationFn: logout,
@@ -140,201 +148,310 @@ export function VaultPage() {
 
   const activePath = search.path
 
+  const headerTitle = (() => {
+    switch (activeTab) {
+      case 'vault': return 'Pyrite'
+      case 'note': return noteQuery.data?.title ?? 'Note'
+      case 'edit': return noteQuery.data ? 'Editing' : 'Edit'
+      case 'search': return 'Search'
+    }
+  })()
+
+  function selectNote(path: string) {
+    void navigate({ to: '/', search: (current) => ({ ...current, path }) })
+  }
+
   return (
     <>
       <main className="app-shell">
-        <aside className="sidebar">
-          <div className="brand">
-            <div>
-              <h1>Pyrite</h1>
-              <p>{sessionQuery.data?.username ?? 'Vault'}</p>
-            </div>
-            <button className="ghost-button" type="button" onClick={() => logoutMutation.mutate()}>
-              <LogOut size={16} />
-            </button>
-          </div>
-
-          <section className="search-card">
-            <label htmlFor="search" className="note-subtitle" style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Search the vault
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Search size={16} style={{ position: 'absolute', left: '1rem', top: '1rem', color: '#8b7355' }} />
-              <input
-                id="search"
-                className="search-input"
-                style={{ paddingLeft: '2.6rem' }}
-                placeholder="Files, text, tags..."
-                value={search.q ?? ''}
-                onChange={(event) =>
-                  navigate({
-                    to: '/',
-                    search: (current) => ({ ...current, q: event.target.value || undefined }),
-                    replace: true,
-                  })
-                }
-              />
-            </div>
-            {searchQuery.data?.results.length ? (
-              <div className="search-results" data-testid="search-results">
-                {searchQuery.data.results.map((result) => (
-                  <button
-                    key={result.path}
-                    className={`result-button ${activePath === result.path ? 'is-active' : ''}`}
-                    data-testid={`search-result-${result.path.replaceAll('/', '__')}`}
-                    type="button"
-                    onClick={() => navigate({ to: '/', search: (current) => ({ ...current, path: result.path }) })}
-                  >
-                    <strong>{result.title}</strong>
-                    <div className="note-subtitle">{result.snippet}</div>
-                  </button>
-                ))}
+        {/* Top header */}
+        <header className="app-header">
+          <h1>{headerTitle}</h1>
+          <div className="header-right">
+            {(activeTab === 'note' || activeTab === 'edit') && noteQuery.data ? (
+              <div className="mobile-menu-anchor">
+                <button className="icon-button" data-testid="note-menu-button" type="button" onClick={() => setMenuOpen(!menuOpen)}>
+                  <MoreVertical size={18} />
+                </button>
+                {menuOpen ? (
+                  <div className="mobile-menu" onClick={() => setMenuOpen(false)}>
+                    {activeTab === 'note' ? (
+                      <button type="button" onClick={() => setActiveTab('edit')}>
+                        <Pencil size={16} />
+                        Edit
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => setActiveTab('note')}>
+                        <FileText size={16} />
+                        Preview
+                      </button>
+                    )}
+                    <button
+                      data-testid="note-menu-save-button"
+                      type="button"
+                      disabled={!noteMeta.dirty || saveMutation.isPending}
+                      onClick={() => saveMutation.mutate()}
+                    >
+                      <Save size={16} />
+                      Save{noteMeta.dirty ? ' *' : ''}
+                    </button>
+                    <label>
+                      <FileUp size={16} />
+                      Upload
+                      <input
+                        hidden
+                        data-testid="attachment-input"
+                        type="file"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0]
+                          if (file) {
+                            uploadMutation.mutate(file)
+                          }
+                        }}
+                      />
+                    </label>
+                    <div className="menu-divider" />
+                    <button type="button" onClick={() => logoutMutation.mutate()}>
+                      <LogOut size={16} />
+                      Log out
+                    </button>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </section>
+            ) : (
+              <button className="icon-button" type="button" onClick={() => logoutMutation.mutate()}>
+                <LogOut size={16} />
+              </button>
+            )}
+          </div>
+        </header>
 
-          <section className="tree-card">
-            <div className="note-subtitle">Vault browser</div>
-            <VaultTree
-              nodes={treeQuery.data ?? []}
-              activePath={activePath}
-              onSelect={(path) => navigate({ to: '/', search: (current) => ({ ...current, path }) })}
-            />
-          </section>
-        </aside>
-
-        <section className="main-panel">
-          {noteMeta.changedExternally ? (
-            <div className="status-banner" data-testid="external-change-banner">
-              <span>The file changed on disk since you opened it. Review a merge before committing.</span>
-            </div>
-          ) : null}
-
-          {noteQuery.data ? (
-            <article className="note-card">
-              <header className="note-header">
+        {/* Screen area */}
+        <div className="screen-area">
+          {/* VAULT TAB */}
+          <div className={`tab-panel ${activeTab === 'vault' ? 'active' : ''}`}>
+            <div className="sidebar">
+              <div className="brand">
                 <div>
-                  <h2 className="note-title" data-testid="note-title">{noteQuery.data.title}</h2>
-                  <p className="note-subtitle" data-testid="note-path">
-                    {noteQuery.data.path} · version {noteQuery.data.versionToken.slice(0, 12)}
-                  </p>
+                  <p>{sessionQuery.data?.username ?? 'Vault'}</p>
                 </div>
+              </div>
 
-                <div className="toolbar">
-                  <div className="tabs">
-                    <button className={`tab-button ${mode === 'edit' ? 'is-active' : ''}`} type="button" onClick={() => setMode('edit')}>
-                      Edit
-                    </button>
-                    <button className={`tab-button ${mode === 'preview' ? 'is-active' : ''}`} type="button" onClick={() => setMode('preview')}>
-                      Preview
-                    </button>
-                  </div>
-                  <label className="secondary-button" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FileUp size={16} />
-                    Upload
-                    <input
-                      hidden
-                      data-testid="attachment-input"
-                      type="file"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (file) {
-                          uploadMutation.mutate(file)
-                        }
-                      }}
-                    />
-                  </label>
-                  <button className="primary-button" type="button" disabled={!noteMeta.dirty || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                    <Save size={16} style={{ marginRight: '0.45rem' }} />
-                    Save
-                  </button>
-                </div>
-              </header>
-
-              {mode === 'edit' ? (
-                <div className="editor-panel">
-                  <CodeMirror value={draft} height="460px" extensions={[markdown()]} onChange={setDraft} />
-                </div>
-              ) : (
-                <div
-                  className="preview-panel"
-                  data-testid="preview-panel"
-                  onClick={(event) => {
-                    const target = event.target as HTMLElement
-                    const anchor = target.closest('a')
-                    const href = anchor?.getAttribute('href')
-                    if (href?.startsWith('/notes/')) {
-                      event.preventDefault()
-                      const decoded = decodeURIComponent(href.replace('/notes/', ''))
-                      void navigate({ to: '/', search: (current) => ({ ...current, path: decoded }) })
-                    }
-                  }}
-                  dangerouslySetInnerHTML={{ __html: noteQuery.data.previewHtml }}
-                />
-              )}
-
-              <section className="meta-grid">
-                <div className="meta-card" data-testid="wikilinks-card">
-                  <h3>Wikilinks</h3>
-                  <div className="meta-list">
-                    {noteQuery.data.wikilinks.map((link) => (
-                      <button
-                        key={`${link.label}-${link.target}`}
-                        className="result-button"
-                        type="button"
-                        onClick={() => link.resolvedPath && navigate({ to: '/', search: (current) => ({ ...current, path: link.resolvedPath ?? undefined }) })}
-                      >
-                        {link.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="meta-card" data-testid="backlinks-card">
-                  <h3>Backlinks</h3>
-                  <div className="meta-list">
-                    {noteQuery.data.backlinks.map((link) => (
-                      <button
-                        key={link.path}
-                        className="result-button"
-                        type="button"
-                        onClick={() => navigate({ to: '/', search: (current) => ({ ...current, path: link.path }) })}
-                      >
-                        <strong>{link.title}</strong>
-                        <div className="note-subtitle">{link.snippet}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="meta-card" data-testid="tags-tasks-card">
-                  <h3>Tags & tasks</h3>
-                  <div className="meta-list">
-                    <div>
-                      {noteQuery.data.tags.map((tag) => (
-                        <span key={tag.value} className="pill" style={{ marginRight: '0.4rem', marginBottom: '0.4rem' }}>
-                          #{tag.value}
-                        </span>
-                      ))}
-                    </div>
-                    {noteQuery.data.tasks.map((task) => (
-                      <span key={task.text} className="pill">
-                        {task.isCompleted ? 'Done' : 'Open'} · {task.text}
-                      </span>
-                    ))}
-                  </div>
+              <section className="search-card">
+                <div style={{ position: 'relative' }}>
+                  <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#8b7355' }} />
+                  <input
+                    id="search"
+                    className="search-input"
+                    style={{ paddingLeft: '2.2rem' }}
+                    placeholder="Files, text, tags..."
+                    value={search.q ?? ''}
+                    onChange={(event) => {
+                      navigate({
+                        to: '/',
+                        search: (current) => ({ ...current, q: event.target.value || undefined }),
+                        replace: true,
+                      })
+                      if (event.target.value) {
+                        setActiveTab('search')
+                      }
+                    }}
+                  />
                 </div>
               </section>
-            </article>
-          ) : (
-            <section className="note-card empty-state">
-              <div>
-                <h2 className="note-title">Open a note</h2>
-                <p className="note-subtitle">
-                  Browse the tree, run a vault search, or follow a backlink to start editing.
-                </p>
+
+              <section className="tree-card">
+                <div className="note-subtitle">Vault browser</div>
+                <VaultTree
+                  nodes={treeQuery.data ?? []}
+                  activePath={activePath}
+                  onSelect={selectNote}
+                />
+              </section>
+            </div>
+          </div>
+
+          {/* NOTE (PREVIEW) TAB */}
+          <div className={`tab-panel ${activeTab === 'note' ? 'active' : ''}`}>
+            <div className="main-panel">
+              {noteMeta.changedExternally ? (
+                <div className="status-banner" data-testid="external-change-banner">
+                  <span>File changed on disk. Review a merge before committing.</span>
+                </div>
+              ) : null}
+
+              {noteQuery.data ? (
+                <article className="note-card">
+                  <header className="note-header">
+                    <h2 className="note-title" data-testid="note-title">{noteQuery.data.title}</h2>
+                    <p className="note-subtitle" data-testid="note-path">
+                      {noteQuery.data.path} · {noteQuery.data.versionToken.slice(0, 12)}
+                    </p>
+                    {noteQuery.data.tags.length > 0 ? (
+                      <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                        {noteQuery.data.tags.map((tag) => (
+                          <span key={tag.value} className="pill">#{tag.value}</span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </header>
+
+                  <div
+                    className="preview-panel"
+                    data-testid="preview-panel"
+                    onClick={(event) => {
+                      const target = event.target as HTMLElement
+                      const anchor = target.closest('a')
+                      const href = anchor?.getAttribute('href')
+                      if (href?.startsWith('/notes/')) {
+                        event.preventDefault()
+                        const decoded = decodeURIComponent(href.replace('/notes/', ''))
+                        selectNote(decoded)
+                      }
+                    }}
+                    dangerouslySetInnerHTML={{ __html: noteQuery.data.previewHtml }}
+                  />
+
+                  <section className="meta-grid">
+                    <div className="meta-card" data-testid="wikilinks-card">
+                      <h3>Wikilinks</h3>
+                      <div className="meta-list">
+                        {noteQuery.data.wikilinks.map((link) => (
+                          <button
+                            key={`${link.label}-${link.target}`}
+                            className="result-button"
+                            type="button"
+                            onClick={() => link.resolvedPath && selectNote(link.resolvedPath)}
+                          >
+                            {link.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="meta-card" data-testid="backlinks-card">
+                      <h3>Backlinks</h3>
+                      <div className="meta-list">
+                        {noteQuery.data.backlinks.map((link) => (
+                          <button
+                            key={link.path}
+                            className="result-button"
+                            type="button"
+                            onClick={() => selectNote(link.path)}
+                          >
+                            <strong>{link.title}</strong>
+                            <div className="note-subtitle">{link.snippet}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="meta-card" data-testid="tags-tasks-card">
+                      <h3>Tasks</h3>
+                      <div className="meta-list">
+                        {noteQuery.data.tasks.map((task) => (
+                          <span key={task.text} className="pill">
+                            {task.isCompleted ? 'Done' : 'Open'} · {task.text}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </article>
+              ) : (
+                <section className="empty-state">
+                  <div>
+                    <h2 className="note-title">Open a note</h2>
+                    <p className="note-subtitle">
+                      Browse the vault or search to start reading.
+                    </p>
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+
+          {/* EDIT TAB */}
+          <div className={`tab-panel ${activeTab === 'edit' ? 'active' : ''}`}>
+            <div className="main-panel">
+              {noteQuery.data ? (
+                <>
+                  <div className="note-header">
+                    <p className="note-subtitle">{noteQuery.data.path}{noteMeta.dirty ? ' *' : ''}</p>
+                  </div>
+                  <div className="editor-panel">
+                    <CodeMirror value={draft} height="calc(100svh - 180px)" extensions={[markdown()]} onChange={setDraft} />
+                  </div>
+                </>
+              ) : (
+                <section className="empty-state">
+                  <div>
+                    <h2 className="note-title">No note selected</h2>
+                    <p className="note-subtitle">Open a note from the vault first.</p>
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+
+          {/* SEARCH TAB */}
+          <div className={`tab-panel ${activeTab === 'search' ? 'active' : ''}`}>
+            <div className="main-panel">
+              <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#8b7355' }} />
+                <input
+                  className="search-input"
+                  style={{ paddingLeft: '2.2rem' }}
+                  placeholder="Search vault..."
+                  value={search.q ?? ''}
+                  onChange={(event) =>
+                    navigate({
+                      to: '/',
+                      search: (current) => ({ ...current, q: event.target.value || undefined }),
+                      replace: true,
+                    })
+                  }
+                />
               </div>
-            </section>
-          )}
-        </section>
+              {searchQuery.data?.results.length ? (
+                <div className="search-results" data-testid="search-results">
+                  {searchQuery.data.results.map((result) => (
+                    <button
+                      key={result.path}
+                      className={`result-button ${activePath === result.path ? 'is-active' : ''}`}
+                      data-testid={`search-result-${result.path.replaceAll('/', '__')}`}
+                      type="button"
+                      onClick={() => selectNote(result.path)}
+                    >
+                      <strong>{result.title}</strong>
+                      <div className="note-subtitle">{result.snippet}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : search.q ? (
+                <p className="note-subtitle" style={{ padding: '1rem 0' }}>No results</p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom navigation */}
+        <nav className="bottom-nav">
+          <button className={`nav-btn ${activeTab === 'vault' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('vault')}>
+            <Folder size={22} />
+            <span>Vault</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'note' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('note')}>
+            <FileText size={22} />
+            <span>Note</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'edit' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('edit')}>
+            <Pencil size={22} />
+            <span>Edit</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'search' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('search')}>
+            <Search size={22} />
+            <span>Search</span>
+          </button>
+        </nav>
       </main>
 
       {mergePreview ? (
