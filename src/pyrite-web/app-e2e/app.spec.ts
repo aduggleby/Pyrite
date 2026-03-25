@@ -34,6 +34,10 @@ async function openNoteMenu(page: import('@playwright/test').Page) {
   await page.getByTestId('note-menu-button').click()
 }
 
+async function saveFromEditHeader(page: import('@playwright/test').Page) {
+  await page.getByTestId('edit-save-button').click()
+}
+
 test('1. shows the login screen', async ({ page }) => {
   await page.goto('/login')
   await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible()
@@ -140,9 +144,9 @@ test('16. saves edits to the workspace file', async ({ page }) => {
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(updated)
-    await openNoteMenu(page)
-    await page.getByTestId('note-menu-save-button').click()
+    await saveFromEditHeader(page)
     await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('Saved from app test.')
+    await expect(page.getByTestId('preview-panel')).toContainText('Duck Vault')
   } finally {
     await fs.writeFile(startHerePath, original)
   }
@@ -191,8 +195,7 @@ test('19. opens merge review after a conflicted save', async ({ page }) => {
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(`${original}\nLocal merge preview change.\n`)
-    await openNoteMenu(page)
-    await page.getByTestId('note-menu-save-button').click()
+    await saveFromEditHeader(page)
     await expect(page.getByText('Merge Review')).toBeVisible()
   } finally {
     await fs.writeFile(startHerePath, original)
@@ -213,8 +216,7 @@ test('20. commits merged content successfully', async ({ page }) => {
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
     await page.keyboard.type(local)
-    await openNoteMenu(page)
-    await page.getByTestId('note-menu-save-button').click()
+    await saveFromEditHeader(page)
     await expect(page.getByText('Merge Review')).toBeVisible()
     await page.getByRole('button', { name: 'Commit Merge' }).click()
     await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('Local merge commit change.')

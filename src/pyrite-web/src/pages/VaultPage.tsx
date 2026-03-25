@@ -20,7 +20,7 @@ import { MergeReviewDialog } from '../components/MergeReviewDialog'
 import { VaultTree } from '../components/VaultTree'
 import type { MergePreviewResponse } from '../types'
 
-type MobileTab = 'vault' | 'note' | 'edit' | 'search'
+type MobileTab = 'vault' | 'view' | 'edit' | 'search'
 
 const cardClass = 'rounded-[var(--radius-lg)] border border-[var(--line)] bg-[rgba(255,255,255,0.64)] shadow-[var(--paper-shadow)] backdrop-blur-sm'
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
@@ -82,7 +82,7 @@ export function VaultPage() {
 
   useEffect(() => {
     if (search.path) {
-      setActiveTab('note')
+      setActiveTab('view')
       setMenuOpen(false)
     }
   }, [search.path])
@@ -109,6 +109,8 @@ export function VaultPage() {
       }
 
       await queryClient.invalidateQueries({ queryKey: ['note', noteQuery.data.path] })
+      setActiveTab('view')
+      setMenuOpen(false)
     },
   })
 
@@ -159,8 +161,8 @@ export function VaultPage() {
     switch (activeTab) {
       case 'vault':
         return 'Pyrite'
-      case 'note':
-        return noteQuery.data?.title ?? 'Note'
+      case 'view':
+        return noteQuery.data?.title ?? 'View'
       case 'edit':
         return noteQuery.data ? 'Editing' : 'Edit'
       case 'search':
@@ -173,7 +175,7 @@ export function VaultPage() {
     void navigate({ to: '/', search: (current) => ({ ...current, path }) })
   }
 
-  const renderMenuButton = (tab: 'note' | 'edit') => (
+  const renderMenuButton = (tab: 'view' | 'edit') => (
     <div className="relative">
       <button
         className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] text-[var(--ink-light)] transition-colors hover:bg-[rgba(44,24,16,0.06)]"
@@ -188,7 +190,7 @@ export function VaultPage() {
           className="absolute right-0 top-full z-25 mt-1.5 flex min-w-48 flex-col rounded-[var(--radius-lg)] border border-[var(--line-strong)] bg-[var(--parchment)] p-1 shadow-[var(--paper-shadow-lg)]"
           onClick={() => setMenuOpen(false)}
         >
-          {tab === 'note' ? (
+          {tab === 'view' ? (
             <button
               className="flex w-full items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-sm text-[var(--ink)] transition-colors hover:bg-[rgba(210,166,121,0.18)]"
               type="button"
@@ -201,22 +203,12 @@ export function VaultPage() {
             <button
               className="flex w-full items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-sm text-[var(--ink)] transition-colors hover:bg-[rgba(210,166,121,0.18)]"
               type="button"
-              onClick={() => setActiveTab('note')}
+              onClick={() => setActiveTab('view')}
             >
               <FileText size={16} />
-              Preview
+              View
             </button>
           )}
-          <button
-            className="flex w-full items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-sm text-[var(--ink)] transition-colors hover:bg-[rgba(210,166,121,0.18)] disabled:cursor-not-allowed disabled:opacity-40"
-            data-testid="note-menu-save-button"
-            type="button"
-            disabled={!noteMeta.dirty || saveMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-          >
-            <Save size={16} />
-            Save{noteMeta.dirty ? ' *' : ''}
-          </button>
           <label className="flex w-full cursor-pointer items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-sm text-[var(--ink)] transition-colors hover:bg-[rgba(210,166,121,0.18)]">
             <FileUp size={16} />
             Upload
@@ -252,8 +244,22 @@ export function VaultPage() {
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[rgba(250,246,241,0.88)] px-3 py-2 backdrop-blur-sm">
           <h1 className="font-['Newsreader'] text-[1.15rem] font-semibold">{headerTitle}</h1>
           <div className="flex items-center gap-1">
-            {(activeTab === 'note' || activeTab === 'edit') && noteQuery.data ? (
-              renderMenuButton(activeTab)
+            {(activeTab === 'view' || activeTab === 'edit') && noteQuery.data ? (
+              <>
+                {activeTab === 'edit' ? (
+                  <button
+                    className="inline-flex min-h-10 items-center gap-2 rounded-[var(--radius)] bg-[var(--accent)] px-3 py-2 text-sm text-[var(--parchment)] shadow-[var(--paper-shadow)] transition-colors hover:bg-[var(--accent-light)] disabled:cursor-not-allowed disabled:opacity-60"
+                    data-testid="edit-save-button"
+                    type="button"
+                    disabled={!noteMeta.dirty || saveMutation.isPending}
+                    onClick={() => saveMutation.mutate()}
+                  >
+                    <Save size={16} />
+                    Save
+                  </button>
+                ) : null}
+                {renderMenuButton(activeTab)}
+              </>
             ) : (
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] text-[var(--ink-light)] transition-colors hover:bg-[rgba(44,24,16,0.06)]"
@@ -308,7 +314,7 @@ export function VaultPage() {
             </div>
           </div>
 
-          <div className={activeTab === 'note' ? 'block' : 'hidden'}>
+          <div className={activeTab === 'view' ? 'block' : 'hidden'}>
             <div className="flex flex-col gap-3 p-3">
               {noteMeta.changedExternally ? (
                 <div
@@ -494,7 +500,7 @@ export function VaultPage() {
         <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-[var(--line)] bg-[rgba(250,246,241,0.92)] px-1 py-1.5 backdrop-blur-sm">
           {([
             { key: 'vault', label: 'Vault', icon: Folder },
-            { key: 'note', label: 'Note', icon: FileText },
+            { key: 'view', label: 'View', icon: FileText },
             { key: 'edit', label: 'Edit', icon: Pencil },
             { key: 'search', label: 'Search', icon: Search },
           ] as const).map(({ key, label, icon: Icon }) => {
