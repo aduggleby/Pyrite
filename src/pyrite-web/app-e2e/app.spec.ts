@@ -15,8 +15,8 @@ async function login(page: import('@playwright/test').Page, password = 'password
   await page.getByPlaceholder('Password').fill(password)
   await page.getByRole('button', { name: 'Log In' }).click()
   if (waitForShell) {
-    await expect(page.getByText('Vault browser')).toBeVisible()
-    await expect(page.locator('.tree-card').getByText('01-Species').first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
+    await expect(page.getByTestId('vault-tree-panel').getByText('01-Species').first()).toBeVisible({ timeout: 15000 })
   }
 }
 
@@ -46,13 +46,13 @@ test('2. rejects invalid credentials', async ({ page }) => {
 
 test('3. logs in with the default dev credentials', async ({ page }) => {
   await login(page)
-  await expect(page.getByText('Vault browser')).toBeVisible()
+  await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
 })
 
 test('4. keeps the session after reload', async ({ page }) => {
   await login(page)
   await page.reload()
-  await expect(page.getByText('Vault browser')).toBeVisible()
+  await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
 })
 
 test('5. renders the top-level duck folders', async ({ page }) => {

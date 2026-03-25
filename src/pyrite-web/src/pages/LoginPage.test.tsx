@@ -4,6 +4,7 @@ import { LoginPage } from './LoginPage'
 
 const navigateMock = vi.fn()
 const loginMock = vi.fn()
+const developmentLoginMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
@@ -26,6 +27,7 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('../lib/api', () => ({
   login: (...args: unknown[]) => loginMock(...args),
+  developmentLogin: () => developmentLoginMock(),
 }))
 
 describe('LoginPage', () => {

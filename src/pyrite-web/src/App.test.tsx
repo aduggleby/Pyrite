@@ -5,6 +5,7 @@ import App from './App'
 vi.mock('./lib/api', () => ({
   fetchSession: async () => ({ isAuthenticated: false, username: null }),
   login: vi.fn(),
+  developmentLogin: vi.fn(),
 }))
 
 describe('App routing', () => {
