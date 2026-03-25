@@ -1,0 +1,138 @@
+using FastEndpoints;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.RateLimiting;
+using Pyrite.Api.Configuration;
+using Pyrite.Api.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddOptions<PyriteOptions>()
+    .Bind(builder.Configuration.GetSection(PyriteOptions.SectionName))
+    .ValidateDataAnnotations()
+    .Validate(options => Directory.Exists(options.VaultRoot), "The configured vault root must exist.")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.Auth.Username), "A username must be configured.")
+    .Validate(options => PasswordHashService.IsValidSha256(options.Auth.PasswordSha256), "Password hash must be a 64-character lowercase SHA-256 hex string.")
+    .ValidateOnStart();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevClient", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:18110", "https://localhost:18110")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-PYRITE-CSRF";
+    options.Cookie.Name = "__Host-pyrite-csrf";
+    options.Cookie.HttpOnly = false;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("login", limiter =>
+    {
+        limiter.Window = TimeSpan.FromMinutes(5);
+        limiter.PermitLimit = 10;
+        limiter.QueueLimit = 0;
+    });
+});
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "__Host-pyrite-auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+    });
+
+builder.Services.AddAuthorizationBuilder();
+builder.Services.AddFastEndpoints();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    var uploadOptions = builder.Configuration.GetSection(PyriteOptions.SectionName).Get<PyriteOptions>()?.Uploads ?? new UploadOptions();
+    options.MultipartBodyLengthLimit = uploadOptions.MaxBytes;
+});
+
+builder.Services.AddSingleton<PasswordHashService>();
+builder.Services.AddSingleton<PathSafetyService>();
+builder.Services.AddSingleton<RequestSecurityService>();
+builder.Services.AddSingleton<MarkdownService>();
+builder.Services.AddSingleton<MergeService>();
+builder.Services.AddSingleton<VaultService>();
+builder.Services.AddSingleton<SearchService>();
+
+var app = builder.Build();
+
+app.UseExceptionHandler(exceptionApp =>
+{
+    exceptionApp.Run(async context =>
+    {
+        var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+        context.Response.StatusCode = exception switch
+        {
+            FileNotFoundException => StatusCodes.Status404NotFound,
+            DirectoryNotFoundException => StatusCodes.Status404NotFound,
+            InvalidOperationException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = exception?.Message ?? "Unexpected server error."
+        });
+    });
+});
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevClient");
+}
+
+app.UseHttpsRedirection();
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseFastEndpoints(config =>
+{
+    config.Endpoints.RoutePrefix = "api";
+});
+
+var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (Directory.Exists(webRoot))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+    app.MapFallbackToFile("index.html");
+}
+
+app.Run();
+
+public partial class Program;

@@ -1,0 +1,446 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..800&family=Source+Serif+4:opsz,wght@8..60,300..700&display=swap');
+
+:root {
+  --parchment: #faf6f1;
+  --parchment-dark: #f0e8de;
+  --parchment-deeper: #e6dacb;
+  --ink: #2c1810;
+  --ink-light: #5c4033;
+  --ink-muted: #8b7355;
+  --accent: #8b4513;
+  --accent-light: #a0522d;
+  --accent-pale: #d2a679;
+  --line: rgba(44, 24, 16, 0.08);
+  --line-strong: rgba(44, 24, 16, 0.16);
+  --paper-shadow:
+    0 1px 2px rgba(44, 24, 16, 0.06),
+    0 4px 12px rgba(44, 24, 16, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --paper-shadow-lg:
+    0 2px 8px rgba(44, 24, 16, 0.08),
+    0 12px 40px rgba(44, 24, 16, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top, rgba(210, 166, 121, 0.18), transparent 28%),
+    linear-gradient(180deg, var(--parchment-deeper) 0%, var(--parchment) 12%, var(--parchment) 100%);
+  font-family: 'Source Serif 4', Georgia, serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100svh;
+  margin: 0;
+}
+
+body {
+  color: var(--ink);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  background: rgba(250, 246, 241, 0.82);
+  backdrop-filter: blur(10px);
+  border-inline: 1px solid var(--line);
+  box-shadow: var(--paper-shadow-lg);
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(250, 246, 241, 0.96), rgba(240, 232, 222, 0.94));
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand h1 {
+  margin: 0;
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.brand p {
+  margin: 0.25rem 0 0;
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+}
+
+.ghost-button,
+.primary-button,
+.secondary-button {
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: var(--parchment);
+  box-shadow: var(--paper-shadow);
+}
+
+.primary-button:hover {
+  background: var(--accent-light);
+}
+
+.secondary-button,
+.ghost-button {
+  background: rgba(255, 255, 255, 0.56);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.ghost-button {
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+}
+
+.search-card,
+.tree-card,
+.note-card,
+.auth-card,
+.dialog-panel {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--paper-shadow);
+}
+
+.search-card,
+.tree-card {
+  padding: 0.9rem;
+}
+
+.search-input,
+.auth-input {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  background: var(--parchment-dark);
+  color: var(--ink);
+  border-radius: 16px;
+  min-height: 48px;
+  padding: 0.85rem 1rem;
+  outline: none;
+}
+
+.search-input:focus,
+.auth-input:focus {
+  border-color: var(--accent-pale);
+  box-shadow: 0 0 0 3px rgba(210, 166, 121, 0.25);
+}
+
+.search-results,
+.tree-list,
+.meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.tree-button,
+.result-button,
+.tab-button {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  background: transparent;
+  color: inherit;
+}
+
+.tree-button,
+.result-button {
+  padding: 0.7rem 0.8rem;
+  border-radius: 16px;
+}
+
+.tree-button:hover,
+.result-button:hover,
+.tree-button.is-active,
+.result-button.is-active {
+  background: rgba(210, 166, 121, 0.22);
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+}
+
+.tree-children {
+  margin-left: 1rem;
+  padding-left: 0.8rem;
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.status-banner {
+  border-radius: 20px;
+  background: rgba(210, 166, 121, 0.26);
+  border: 1px solid rgba(139, 69, 19, 0.24);
+  padding: 0.9rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.note-card {
+  padding: 1rem;
+  min-height: calc(100svh - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.note-title {
+  margin: 0;
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.note-subtitle {
+  margin: 0.3rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: inline-flex;
+  background: var(--parchment-dark);
+  border-radius: 999px;
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+}
+
+.tab-button {
+  min-height: 40px;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+}
+
+.tab-button.is-active {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--paper-shadow);
+}
+
+.editor-panel,
+.preview-panel,
+.merge-panel {
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--parchment);
+  overflow: hidden;
+}
+
+.preview-panel {
+  padding: 1.25rem;
+  min-height: 380px;
+}
+
+.preview-panel h1,
+.preview-panel h2,
+.preview-panel h3 {
+  font-family: 'Newsreader', Georgia, serif;
+  margin-top: 0;
+}
+
+.preview-panel p,
+.preview-panel li,
+.preview-panel blockquote {
+  line-height: 1.7;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.meta-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(240, 232, 222, 0.46);
+  padding: 1rem;
+}
+
+.meta-card h3 {
+  margin: 0 0 0.65rem;
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 1rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(210, 166, 121, 0.24);
+  color: var(--ink-light);
+  font-size: 0.75rem;
+}
+
+.empty-state {
+  min-height: 60svh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: var(--ink-light);
+}
+
+.auth-layout {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.auth-card {
+  width: min(460px, 100%);
+  padding: 2rem;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 2.2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 24, 16, 0.32);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.dialog-panel {
+  width: min(920px, 100%);
+  max-height: 92svh;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.meta-list {
+  font-size: 0.86rem;
+  color: var(--ink-light);
+}
+
+.cm-editor {
+  min-height: 420px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.cm-theme,
+.cm-editor,
+.cm-scroller {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .note-card {
+    min-height: auto;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

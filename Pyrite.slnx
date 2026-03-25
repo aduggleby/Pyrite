@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Pyrite.Api/Pyrite.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj" />
+  </Folder>
+</Solution>
