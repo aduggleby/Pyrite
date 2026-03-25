@@ -176,11 +176,12 @@ export function VaultPage() {
               />
             </div>
             {searchQuery.data?.results.length ? (
-              <div className="search-results">
+              <div className="search-results" data-testid="search-results">
                 {searchQuery.data.results.map((result) => (
                   <button
                     key={result.path}
                     className={`result-button ${activePath === result.path ? 'is-active' : ''}`}
+                    data-testid={`search-result-${result.path.replaceAll('/', '__')}`}
                     type="button"
                     onClick={() => navigate({ to: '/', search: (current) => ({ ...current, path: result.path }) })}
                   >
@@ -204,7 +205,7 @@ export function VaultPage() {
 
         <section className="main-panel">
           {noteMeta.changedExternally ? (
-            <div className="status-banner">
+            <div className="status-banner" data-testid="external-change-banner">
               <span>The file changed on disk since you opened it. Review a merge before committing.</span>
             </div>
           ) : null}
@@ -213,8 +214,8 @@ export function VaultPage() {
             <article className="note-card">
               <header className="note-header">
                 <div>
-                  <h2 className="note-title">{noteQuery.data.title}</h2>
-                  <p className="note-subtitle">
+                  <h2 className="note-title" data-testid="note-title">{noteQuery.data.title}</h2>
+                  <p className="note-subtitle" data-testid="note-path">
                     {noteQuery.data.path} · version {noteQuery.data.versionToken.slice(0, 12)}
                   </p>
                 </div>
@@ -233,6 +234,7 @@ export function VaultPage() {
                     Upload
                     <input
                       hidden
+                      data-testid="attachment-input"
                       type="file"
                       onChange={(event) => {
                         const file = event.target.files?.[0]
@@ -256,6 +258,7 @@ export function VaultPage() {
               ) : (
                 <div
                   className="preview-panel"
+                  data-testid="preview-panel"
                   onClick={(event) => {
                     const target = event.target as HTMLElement
                     const anchor = target.closest('a')
@@ -271,7 +274,7 @@ export function VaultPage() {
               )}
 
               <section className="meta-grid">
-                <div className="meta-card">
+                <div className="meta-card" data-testid="wikilinks-card">
                   <h3>Wikilinks</h3>
                   <div className="meta-list">
                     {noteQuery.data.wikilinks.map((link) => (
@@ -286,7 +289,7 @@ export function VaultPage() {
                     ))}
                   </div>
                 </div>
-                <div className="meta-card">
+                <div className="meta-card" data-testid="backlinks-card">
                   <h3>Backlinks</h3>
                   <div className="meta-list">
                     {noteQuery.data.backlinks.map((link) => (
@@ -302,7 +305,7 @@ export function VaultPage() {
                     ))}
                   </div>
                 </div>
-                <div className="meta-card">
+                <div className="meta-card" data-testid="tags-tasks-card">
                   <h3>Tags & tasks</h3>
                   <div className="meta-list">
                     <div>

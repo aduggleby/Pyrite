@@ -15,7 +15,7 @@ fi
 docker compose -f "$ROOT_DIR/compose.dev.yml" down --remove-orphans
 
 if [[ "$RESET_VOLUMES" == true ]]; then
-  rm -rf "$WORKSPACE_VAULT_DIR"
+  docker run --rm -v "$ROOT_DIR:/repo" alpine:3.22 sh -c 'rm -rf /repo/.dev-workspace/duck-vault'
   mkdir -p "$WORKSPACE_DIR"
   cp -R "$SEED_DIR" "$WORKSPACE_VAULT_DIR"
 fi

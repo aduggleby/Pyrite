@@ -3,6 +3,8 @@
 ## Overview
 Duck Behavior Baseline is a compact research note used to exercise longer-form markdown inside the seed vault.
 
+Tags: #behavior #ducks #baseline
+
 ## Connected Notes
 - [[Shallow Marsh Guide]]
 - [[Open Lake Survey]]

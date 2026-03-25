@@ -148,6 +148,8 @@ If auth hash behavior changes, update the README and the compatibility tests tog
 
 Before considering a feature complete, cover the relevant paths with tests.
 
+Use `./test-app.sh` for app-level browser verification. It resets the gitignored `.dev-workspace/` vault, starts the Docker dev stack, runs the Playwright suite against the running app, and stops the stack afterward.
+
 - Backend tests:
   - hash compatibility with the documented `openssl` command
   - auth and session behavior

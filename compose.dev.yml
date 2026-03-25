@@ -4,7 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: pyrite-dev
+    user: "${PYRITE_UID:-1000}:${PYRITE_GID:-1000}"
     environment:
+      ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:18100
       Pyrite__VaultRoot: /vault
       Pyrite__Auth__Username: alex
@@ -19,6 +21,7 @@ services:
   vault-sidecar:
     image: alpine:3.22
     container_name: pyrite-dev-vault
+    user: "${PYRITE_UID:-1000}:${PYRITE_GID:-1000}"
     command: ["sh", "-c", "sleep infinity"]
     volumes:
       - ./.dev-workspace/duck-vault:/vault

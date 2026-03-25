@@ -16,6 +16,11 @@ ensure_workspace() {
 
 ensure_workspace
 
+PYRITE_UID="$(id -u)"
+PYRITE_GID="$(id -g)"
+export PYRITE_UID
+export PYRITE_GID
+
 docker compose -f "$ROOT_DIR/compose.dev.yml" up --build -d
 
 printf 'Pyrite dev stack is running.\n'

@@ -12,6 +12,13 @@ import type {
 
 let csrfToken: string | null = null
 
+function encodeVaultPath(path: string) {
+  return path
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+}
+
 async function request<T>(path: string, init?: RequestInit, unsafe = false): Promise<T> {
   if (unsafe && !csrfToken) {
     const token = await fetchAntiforgeryToken()
@@ -77,16 +84,16 @@ export async function fetchVaultTree() {
 }
 
 export async function fetchNote(path: string) {
-  return request<NoteResponse>(`/api/notes/${encodeURIComponent(path)}`)
+  return request<NoteResponse>(`/api/notes/${encodeVaultPath(path)}`)
 }
 
 export async function fetchNoteStatus(path: string, clientVersion?: string) {
   const suffix = clientVersion ? `?clientVersion=${encodeURIComponent(clientVersion)}` : ''
-  return request<NoteStatusResponse>(`/api/notes/status/${encodeURIComponent(path)}${suffix}`)
+  return request<NoteStatusResponse>(`/api/notes/status/${encodeVaultPath(path)}${suffix}`)
 }
 
 export async function saveNote(path: string, content: string, expectedVersionToken: string) {
-  const response = await fetch(`/api/notes/${encodeURIComponent(path)}`, {
+  const response = await fetch(`/api/notes/${encodeVaultPath(path)}`, {
     method: 'PUT',
     credentials: 'include',
     headers: {
@@ -106,7 +113,7 @@ export async function saveNote(path: string, content: string, expectedVersionTok
 
 export async function fetchMergePreview(path: string, baseContent: string, localContent: string) {
   return request<MergePreviewResponse>(
-    `/api/notes/merge-preview/${encodeURIComponent(path)}`,
+    `/api/notes/merge-preview/${encodeVaultPath(path)}`,
     {
       method: 'POST',
       body: JSON.stringify({ baseContent, localContent }),
@@ -116,7 +123,7 @@ export async function fetchMergePreview(path: string, baseContent: string, local
 }
 
 export async function commitMerge(path: string, content: string, remoteVersionToken: string) {
-  const response = await fetch(`/api/notes/merge-commit/${encodeURIComponent(path)}`, {
+  const response = await fetch(`/api/notes/merge-commit/${encodeVaultPath(path)}`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -138,7 +145,7 @@ export async function uploadAttachment(path: string, file: File) {
   const formData = new FormData()
   formData.append('file', file)
   return request<AttachmentUploadResponse>(
-    `/api/notes/attachments/${encodeURIComponent(path)}`,
+    `/api/notes/attachments/${encodeVaultPath(path)}`,
     {
       method: 'POST',
       headers: csrfToken ? { 'X-PYRITE-CSRF': csrfToken } : undefined,

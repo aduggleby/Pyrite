@@ -40,7 +40,7 @@ export function LoginPage() {
           <button className="primary-button" type="submit" disabled={loginMutation.isPending}>
             Log In
           </button>
-          {loginMutation.isError ? <p className="note-subtitle">The configured credentials did not match.</p> : null}
+          {loginMutation.isError ? <p className="note-subtitle">Login failed. Check the credentials and server setup.</p> : null}
         </form>
       </section>
     </main>
