@@ -3,6 +3,7 @@ designs/
 .playwright-mcp/
 example-com.png
 .dev-workspace/
+logs/
 
 # OS and editor files
 .DS_Store

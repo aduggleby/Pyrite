@@ -8,6 +8,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:18100
+      PYRITE_LOGS_DIR: /logs
       Pyrite__VaultRoot: /vault
       Pyrite__Auth__Username: alex
       Pyrite__Auth__PasswordSha256: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
@@ -16,6 +17,7 @@ services:
       - "18100:18100"
     volumes:
       - ./.dev-workspace/duck-vault:/vault
+      - ./logs:/logs
     restart: unless-stopped
 
   vault-sidecar:

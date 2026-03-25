@@ -11,7 +11,7 @@ trap cleanup EXIT
 
 printf 'Resetting workspace and starting Docker dev stack...\n'
 "$ROOT_DIR/stop-dev.sh" --volumes >/dev/null 2>&1 || true
-"$ROOT_DIR/run-dev.sh" >/dev/null
+PYRITE_NO_TMUX=1 "$ROOT_DIR/run-dev.sh" >/dev/null
 
 printf 'Waiting for app readiness...\n'
 for _ in $(seq 1 60); do

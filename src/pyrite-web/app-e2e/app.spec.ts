@@ -16,7 +16,7 @@ async function login(page: import('@playwright/test').Page, password = 'password
   await page.getByRole('button', { name: 'Log In' }).click()
   if (waitForShell) {
     await expect(page.getByText('Vault browser')).toBeVisible()
-    await expect(page.getByText('01-Species')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.tree-card').getByText('01-Species').first()).toBeVisible({ timeout: 15000 })
   }
 }
 

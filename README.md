@@ -44,10 +44,14 @@ The recommended local workflow runs everything in Docker against a copied seed v
 ./run-dev.sh
 ```
 
-This starts two containers:
+This starts two containers and opens a `tmux` session with split log panes:
 
 - `pyrite-dev`: the Pyrite app on `http://localhost:18100`
 - `pyrite-dev-vault`: a sidecar shell container that mounts the same `/vault`
+- `logs/dev/run-dev.log`: the dev launcher output
+- `logs/dev/pyrite-container.log`: `docker compose logs -f pyrite`
+- `logs/dev/vault-sidecar-container.log`: `docker compose logs -f vault-sidecar`
+- `logs/dev/pyrite-api.log`: application file log output from inside the app container
 
 The sidecar is useful for inspecting or modifying the mounted vault while Pyrite is running:
 
@@ -58,6 +62,8 @@ docker exec -it pyrite-dev-vault sh
 The committed seed vault lives in [`dev/duck-vault`](/home/alex/Source/Pyrite/dev/duck-vault) and contains about fifty duck-focused markdown notes across four top-level folders and multiple subfolders.
 
 `./run-dev.sh` copies that seed vault into `.dev-workspace/duck-vault` the first time it runs. After that, the workspace persists across restarts so edits remain available.
+
+Every `./run-dev.sh` invocation clears `logs/dev/` before the stack starts. For automation, set `PYRITE_NO_TMUX=1` to skip the interactive `tmux` attach.
 
 Stop the dev stack:
 
@@ -72,6 +78,12 @@ Stop it and reset the workspace vault back to a fresh copy of the committed duck
 ```
 
 `.dev-workspace/` is intentionally gitignored.
+
+## Logging
+
+Development runs write fresh logs into gitignored `logs/dev/` on each start.
+
+Production writes rolling daily logs into `logs/prod/` and retains the latest 30 files. If you want those logs persisted outside the container, mount the `logs/` directory as a volume in your deployment.
 
 ### Direct Local Tooling
 

@@ -5,8 +5,31 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 using Pyrite.Api.Configuration;
 using Pyrite.Api.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logsRoot = Environment.GetEnvironmentVariable("PYRITE_LOGS_DIR") ?? Path.Combine(builder.Environment.ContentRootPath, "logs");
+var appLogsDirectory = Path.Combine(logsRoot, builder.Environment.IsDevelopment() ? "dev" : "prod");
+Directory.CreateDirectory(appLogsDirectory);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    var filePath = context.HostingEnvironment.IsDevelopment()
+        ? Path.Combine(appLogsDirectory, "pyrite-api.log")
+        : Path.Combine(appLogsDirectory, "pyrite-api-.log");
+
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: filePath,
+            rollingInterval: context.HostingEnvironment.IsDevelopment() ? RollingInterval.Infinite : RollingInterval.Day,
+            retainedFileCountLimit: context.HostingEnvironment.IsDevelopment() ? 1 : 30,
+            shared: true);
+});
 
 builder.Services
     .AddOptions<PyriteOptions>()
