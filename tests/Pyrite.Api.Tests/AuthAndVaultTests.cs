@@ -66,6 +66,22 @@ public sealed class AuthAndVaultTests(PyriteApplicationFactory factory) : IClass
     }
 
     [Fact]
+    public async Task Search_splits_unquoted_terms_and_preserves_quoted_phrases()
+    {
+        using var client = factory.CreateClientWithCookies();
+        await LoginAsync(client);
+
+        var andSearch = await client.GetFromJsonAsync<SearchResponse>("/api/search?q=launch%20ship");
+        andSearch!.Results.Should().ContainSingle(result => result.Path == "Projects/Launch Plan.md");
+
+        var exactPhrase = await client.GetFromJsonAsync<SearchResponse>("/api/search?q=%22Ship%20it%22");
+        exactPhrase!.Results.Should().ContainSingle(result => result.Path == "Projects/Launch Plan.md");
+
+        var reversedPhrase = await client.GetFromJsonAsync<SearchResponse>("/api/search?q=%22it%20Ship%22");
+        reversedPhrase!.Results.Should().BeEmpty();
+    }
+
+    [Fact]
     public void PathSafetyService_rejects_path_traversal()
     {
         var service = new PathSafetyService(Options.Create(new PyriteOptions

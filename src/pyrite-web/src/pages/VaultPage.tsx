@@ -22,7 +22,6 @@ import type { MergePreviewResponse } from '../types'
 
 type MobileTab = 'vault' | 'view' | 'edit' | 'search'
 
-const cardClass = 'rounded-[var(--radius-lg)] border border-[var(--line)] bg-[rgba(255,255,255,0.64)] shadow-[var(--paper-shadow)] backdrop-blur-sm'
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
 const resultButtonClass =
   'w-full rounded-[var(--radius)] px-3 py-2 text-left transition-colors hover:bg-[rgba(210,166,121,0.16)]'
@@ -243,7 +242,12 @@ export function VaultPage() {
     <>
       <main className="min-h-svh bg-[radial-gradient(circle_at_top,rgba(210,166,121,0.18),transparent_42%),linear-gradient(180deg,var(--parchment),var(--parchment-dark))] text-[var(--ink)]">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[rgba(250,246,241,0.88)] px-3 py-2 backdrop-blur-sm">
-          <h1 className="font-['Newsreader'] text-[1.15rem] font-semibold">{headerTitle}</h1>
+          <h1
+            className="font-['Newsreader'] text-[1.15rem] font-semibold"
+            data-testid={activeTab === 'view' || activeTab === 'edit' ? 'note-title' : undefined}
+          >
+            {headerTitle}
+          </h1>
           <div className="flex items-center gap-1">
             {(activeTab === 'view' || activeTab === 'edit') && noteQuery.data ? (
               <>
@@ -276,43 +280,32 @@ export function VaultPage() {
 
         <div className="pb-[76px]">
           <div className={activeTab === 'vault' ? 'block' : 'hidden'}>
-            <div className="flex flex-col gap-3 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[0.7rem] uppercase tracking-[0.24em] text-[var(--ink-muted)]">Vault browser</p>
-                  <p className="mt-1 text-sm text-[var(--ink)]">{sessionQuery.data?.username ?? 'Vault'}</p>
-                </div>
+            <div className="px-4 py-2">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]"
+                />
+                <input
+                  id="search"
+                  className="min-h-10 w-full rounded-[var(--radius)] border border-[var(--line-strong)] bg-[var(--parchment-dark)] px-3 py-2 pl-9 text-[0.9rem] outline-none transition-shadow placeholder:text-[var(--ink-muted)] focus:border-[var(--accent-pale)] focus:shadow-[0_0_0_3px_rgba(210,166,121,0.25)]"
+                  placeholder="Files, text, tags..."
+                  value={search.q ?? ''}
+                  onChange={(event) => {
+                    navigate({
+                      to: '/',
+                      search: (current) => ({ ...current, q: event.target.value || undefined }),
+                      replace: true,
+                    })
+                    if (event.target.value) {
+                      setActiveTab('search')
+                    }
+                  }}
+                />
               </div>
-
-              <section className={`${cardClass} p-3`}>
-                <div className="relative">
-                  <Search
-                    size={14}
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]"
-                  />
-                  <input
-                    id="search"
-                    className="min-h-10 w-full rounded-[var(--radius)] border border-[var(--line-strong)] bg-[var(--parchment-dark)] px-3 py-2 pl-9 text-[0.9rem] outline-none transition-shadow placeholder:text-[var(--ink-muted)] focus:border-[var(--accent-pale)] focus:shadow-[0_0_0_3px_rgba(210,166,121,0.25)]"
-                    placeholder="Files, text, tags..."
-                    value={search.q ?? ''}
-                    onChange={(event) => {
-                      navigate({
-                        to: '/',
-                        search: (current) => ({ ...current, q: event.target.value || undefined }),
-                        replace: true,
-                      })
-                      if (event.target.value) {
-                        setActiveTab('search')
-                      }
-                    }}
-                  />
-                </div>
-              </section>
-
-              <section className={`${cardClass} p-3`} data-testid="vault-tree-panel">
-                <div className={noteSubtitleClass}>Vault browser</div>
-                <VaultTree nodes={treeQuery.data ?? []} activePath={activePath} onSelect={selectNote} />
-              </section>
+            </div>
+            <div className="px-2" data-testid="vault-tree-panel">
+              <VaultTree nodes={treeQuery.data ?? []} activePath={activePath} onSelect={selectNote} />
             </div>
           </div>
 
@@ -328,14 +321,10 @@ export function VaultPage() {
 
             {noteQuery.data ? (
               <article>
-                <div className="border-b border-[var(--line)] px-4 py-3">
-                  <h2 className="font-['Newsreader'] text-2xl font-semibold text-[var(--ink)]" data-testid="note-title">
-                    {noteQuery.data.title}
-                  </h2>
-                  <div className="mt-1.5 flex items-center gap-1.5">
-                    <p className={noteSubtitleClass} data-testid="note-path">
-                      {noteQuery.data.path}
-                    </p>
+                <div className="flex items-center gap-1.5 border-b border-[var(--line)] px-4 py-2">
+                  <p className={noteSubtitleClass} data-testid="note-path">
+                    {noteQuery.data.path}
+                  </p>
                     {noteQuery.data.tags.map((tag) => (
                       <span
                         key={tag.value}
@@ -344,7 +333,6 @@ export function VaultPage() {
                         #{tag.value}
                       </span>
                     ))}
-                  </div>
                 </div>
 
                 <div
@@ -395,75 +383,68 @@ export function VaultPage() {
           </div>
 
           <div className={activeTab === 'edit' ? 'block' : 'hidden'}>
-            <div className="flex flex-col gap-3 p-3">
-              {noteQuery.data ? (
-                <div className={`${cardClass} flex flex-col gap-3 p-4`}>
-                  <div className="flex flex-col gap-2">
-                    <p className={noteSubtitleClass}>
-                      {noteQuery.data.path}
-                      {noteMeta.dirty ? ' *' : ''}
-                    </p>
-                  </div>
-                  <div className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--parchment)]">
-                    <CodeMirror value={draft} height="calc(100svh - 180px)" extensions={[markdown()]} onChange={setDraft} />
-                  </div>
+            {noteQuery.data ? (
+              <>
+                <div className="border-b border-[var(--line)] px-4 py-2">
+                  <p className={noteSubtitleClass}>
+                    {noteQuery.data.path}{noteMeta.dirty ? ' *' : ''}
+                  </p>
                 </div>
-              ) : (
-                <section className={`${cardClass} grid min-h-[50svh] place-items-center p-6 text-center text-[var(--ink-light)]`}>
-                  <div>
-                    <h2 className="font-['Newsreader'] text-2xl">No note selected</h2>
-                    <p className={`mt-2 ${noteSubtitleClass}`}>Open a note from the vault first.</p>
-                  </div>
-                </section>
-              )}
-            </div>
+                <CodeMirror value={draft} height="calc(100svh - 140px)" extensions={[markdown()]} onChange={setDraft} />
+              </>
+            ) : (
+              <div className="grid min-h-[50svh] place-items-center px-4 text-center text-[var(--ink-muted)]">
+                <div>
+                  <h2 className="font-['Newsreader'] text-xl">No note selected</h2>
+                  <p className={`mt-1 ${noteSubtitleClass}`}>Open a note from the vault first.</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className={activeTab === 'search' ? 'block' : 'hidden'}>
-            <div className="flex flex-col gap-3 p-3">
-              <section className={`${cardClass} p-3`}>
-                <div className="relative">
-                  <Search
-                    size={14}
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]"
-                  />
-                  <input
-                    className="min-h-10 w-full rounded-[var(--radius)] border border-[var(--line-strong)] bg-[var(--parchment-dark)] px-3 py-2 pl-9 text-[0.9rem] outline-none transition-shadow placeholder:text-[var(--ink-muted)] focus:border-[var(--accent-pale)] focus:shadow-[0_0_0_3px_rgba(210,166,121,0.25)]"
-                    placeholder="Search vault..."
-                    value={search.q ?? ''}
-                    onChange={(event) =>
-                      navigate({
-                        to: '/',
-                        search: (current) => ({ ...current, q: event.target.value || undefined }),
-                        replace: true,
-                      })
-                    }
-                  />
-                </div>
-
-                {searchQuery.data?.results.length ? (
-                  <div className="mt-2 flex flex-col gap-1" data-testid="search-results">
-                    {searchQuery.data.results.map((result) => (
-                      <button
-                        key={result.path}
-                        className={[
-                          resultButtonClass,
-                          activePath === result.path ? 'bg-[rgba(210,166,121,0.22)]' : '',
-                        ].join(' ')}
-                        data-testid={`search-result-${result.path.replaceAll('/', '__')}`}
-                        type="button"
-                        onClick={() => selectNote(result.path)}
-                      >
-                        <strong className="block text-[var(--ink)]">{result.title}</strong>
-                        <div className={noteSubtitleClass}>{result.snippet}</div>
-                      </button>
-                    ))}
-                  </div>
-                ) : search.q ? (
-                  <p className={`px-1 py-4 ${noteSubtitleClass}`}>No results</p>
-                ) : null}
-              </section>
+            <div className="px-4 py-2">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]"
+                />
+                <input
+                  className="min-h-10 w-full rounded-[var(--radius)] border border-[var(--line-strong)] bg-[var(--parchment-dark)] px-3 py-2 pl-9 text-[0.9rem] outline-none transition-shadow placeholder:text-[var(--ink-muted)] focus:border-[var(--accent-pale)] focus:shadow-[0_0_0_3px_rgba(210,166,121,0.25)]"
+                  placeholder="Search vault..."
+                  value={search.q ?? ''}
+                  onChange={(event) =>
+                    navigate({
+                      to: '/',
+                      search: (current) => ({ ...current, q: event.target.value || undefined }),
+                      replace: true,
+                    })
+                  }
+                />
+              </div>
             </div>
+
+            {searchQuery.data?.results.length ? (
+              <div className="flex flex-col" data-testid="search-results">
+                {searchQuery.data.results.map((result) => (
+                  <button
+                    key={result.path}
+                    className={[
+                      'w-full border-b border-[var(--line)] px-4 py-2.5 text-left transition-colors hover:bg-[rgba(210,166,121,0.12)]',
+                      activePath === result.path ? 'bg-[rgba(210,166,121,0.18)]' : '',
+                    ].join(' ')}
+                    data-testid={`search-result-${result.path.replaceAll('/', '__')}`}
+                    type="button"
+                    onClick={() => selectNote(result.path)}
+                  >
+                    <strong className="block text-sm text-[var(--ink)]">{result.title}</strong>
+                    <span className={noteSubtitleClass}>{result.snippet}</span>
+                  </button>
+                ))}
+              </div>
+            ) : search.q ? (
+              <p className={`px-4 py-4 ${noteSubtitleClass}`}>No results</p>
+            ) : null}
           </div>
         </div>
 
