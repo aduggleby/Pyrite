@@ -1,5 +1,5 @@
-@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..800&family=Source+Serif+4:opsz,wght@8..60,300..700&display=swap');
+@import 'tailwindcss';
 
 :root {
   --parchment: #faf6f1;
@@ -21,8 +21,8 @@
     0 2px 8px rgba(44, 24, 16, 0.08),
     0 12px 40px rgba(44, 24, 16, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  --radius: 6px;
-  --radius-lg: 8px;
+  --radius: 3px;
+  --radius-lg: 4px;
   color: var(--ink);
   background: var(--parchment);
   font-family: 'Source Serif 4', Georgia, serif;
