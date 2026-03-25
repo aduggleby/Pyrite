@@ -92,47 +92,63 @@ test('9. shows the development login shortcut in dev mode', async ({ page }) => 
   await expect(page.getByRole('button', { name: 'Use Development Login' })).toBeVisible()
 })
 
-test('10. shows tasks on the starter note', async ({ page }) => {
+test('10. logs in through the development login shortcut', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Use Development Login' }).click()
+  await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
+})
+
+test('11. shows tasks on the starter note', async ({ page }) => {
   await login(page)
   await openStartHere(page)
   await expect(page.getByTestId('tags-tasks-card')).toContainText('Open · Verify the migration timeline note')
   await expect(page.getByTestId('tags-tasks-card')).toContainText('Done · Seed the local development workspace')
 })
 
-test('11. shows preview content for an opened note', async ({ page }) => {
+test('12. shows preview content for an opened note in View mode', async ({ page }) => {
   await login(page)
   await openStartHere(page)
+  await expect(page.getByRole('button', { name: 'View' })).toBeVisible()
   await expect(page.getByTestId('preview-panel')).toContainText('Duck Vault')
 })
 
-test('12. navigates from a preview wikilink', async ({ page }) => {
+test('13. shows the explicit save button in edit mode', async ({ page }) => {
+  await login(page)
+  await openStartHere(page)
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await expect(page.getByTestId('edit-save-button')).toBeVisible()
+  await openNoteMenu(page)
+  await expect(page.getByTestId('note-menu-save-button')).toHaveCount(0)
+})
+
+test('14. navigates from a preview wikilink', async ({ page }) => {
   await login(page)
   await openStartHere(page)
   await page.getByTestId('preview-panel').getByRole('link', { name: 'Shallow Marsh Guide' }).click()
   await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
 })
 
-test('13. shows wikilinks metadata', async ({ page }) => {
+test('15. shows wikilinks metadata', async ({ page }) => {
   await login(page)
   await openStartHere(page)
   await expect(page.getByTestId('wikilinks-card')).toContainText('Shallow Marsh Guide')
   await expect(page.getByTestId('wikilinks-card')).toContainText('Duck Behavior Baseline')
 })
 
-test('14. shows backlinks for Shallow Marsh Guide', async ({ page }) => {
+test('16. shows backlinks for Shallow Marsh Guide', async ({ page }) => {
   await login(page)
   await openMarshGuide(page)
   await expect(page.getByTestId('backlinks-card')).toContainText('Mallard')
 })
 
-test('15. opens a note from search results', async ({ page }) => {
+test('17. opens a note from search results', async ({ page }) => {
   await login(page)
   await page.getByPlaceholder('Files, text, tags...').fill('behavior')
   await page.getByTestId('search-result-04-Research__behavior__Duck Behavior Baseline.md').click()
   await expect(page.getByTestId('note-title')).toHaveText('Duck Behavior Baseline')
 })
 
-test('16. saves edits to the workspace file', async ({ page }) => {
+test('18. saves edits to the workspace file and returns to View mode', async ({ page }) => {
   const original = await fs.readFile(startHerePath, 'utf8')
   const updated = `${original}\nSaved from app test.\n`
 
@@ -152,7 +168,7 @@ test('16. saves edits to the workspace file', async ({ page }) => {
   }
 })
 
-test('17. uploads an attachment and inserts the markdown link', async ({ page }) => {
+test('19. uploads an attachment and inserts the markdown link', async ({ page }) => {
   const original = await fs.readFile(startHerePath, 'utf8')
   const attachmentsDir = path.join(workspaceRoot, '.attachments')
 
@@ -170,7 +186,7 @@ test('17. uploads an attachment and inserts the markdown link', async ({ page })
   }
 })
 
-test('18. warns about external file changes', async ({ page }) => {
+test('20. warns about external file changes', async ({ page }) => {
   const original = await fs.readFile(startHerePath, 'utf8')
 
   try {
@@ -183,7 +199,7 @@ test('18. warns about external file changes', async ({ page }) => {
   }
 })
 
-test('19. opens merge review after a conflicted save', async ({ page }) => {
+test('21. opens merge review after a conflicted save', async ({ page }) => {
   const original = await fs.readFile(startHerePath, 'utf8')
 
   try {
@@ -202,7 +218,7 @@ test('19. opens merge review after a conflicted save', async ({ page }) => {
   }
 })
 
-test('20. commits merged content successfully', async ({ page }) => {
+test('22. commits merged content successfully', async ({ page }) => {
   const original = await fs.readFile(startHerePath, 'utf8')
   const remote = `${original}\nRemote merge commit change.\n`
   const local = `${original}\nLocal merge commit change.\n`
