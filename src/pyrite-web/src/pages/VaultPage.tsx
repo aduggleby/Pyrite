@@ -227,6 +227,7 @@ export function VaultPage() {
           <div className="my-1 h-px bg-[var(--line)]" />
           <button
             className="flex w-full items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-sm text-[var(--ink)] transition-colors hover:bg-[rgba(210,166,121,0.18)]"
+            data-testid="menu-logout-button"
             type="button"
             onClick={() => logoutMutation.mutate()}
           >
@@ -263,6 +264,7 @@ export function VaultPage() {
             ) : (
               <button
                 className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] text-[var(--ink-light)] transition-colors hover:bg-[rgba(44,24,16,0.06)]"
+                data-testid="header-logout-button"
                 type="button"
                 onClick={() => logoutMutation.mutate()}
               >
@@ -315,75 +317,57 @@ export function VaultPage() {
           </div>
 
           <div className={activeTab === 'view' ? 'block' : 'hidden'}>
-            <div className="flex flex-col gap-3 p-3">
-              {noteMeta.changedExternally ? (
-                <div
-                  className="flex items-center gap-3 rounded-[var(--radius)] border border-[rgba(139,69,19,0.24)] bg-[rgba(210,166,121,0.26)] px-3 py-2 text-sm"
-                  data-testid="external-change-banner"
-                >
-                  <span>File changed on disk. Review a merge before committing.</span>
-                </div>
-              ) : null}
+            {noteMeta.changedExternally ? (
+              <div
+                className="border-b border-[rgba(139,69,19,0.24)] bg-[rgba(210,166,121,0.18)] px-4 py-2 text-sm"
+                data-testid="external-change-banner"
+              >
+                File changed on disk. Review a merge before committing.
+              </div>
+            ) : null}
 
-              {noteQuery.data ? (
-                <article className={`${cardClass} flex flex-col gap-3 p-4`}>
-                  <header className="flex flex-col gap-2">
-                    <h2 className="font-['Newsreader'] text-2xl leading-none" data-testid="note-title">
-                      {noteQuery.data.title}
-                    </h2>
+            {noteQuery.data ? (
+              <article>
+                <div className="border-b border-[var(--line)] px-4 py-3">
+                  <h2 className="font-['Newsreader'] text-2xl font-semibold text-[var(--ink)]" data-testid="note-title">
+                    {noteQuery.data.title}
+                  </h2>
+                  <div className="mt-1.5 flex items-center gap-1.5">
                     <p className={noteSubtitleClass} data-testid="note-path">
-                      {noteQuery.data.path} · {noteQuery.data.versionToken.slice(0, 12)}
+                      {noteQuery.data.path}
                     </p>
-                    {noteQuery.data.tags.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {noteQuery.data.tags.map((tag) => (
-                          <span
-                            key={tag.value}
-                            className="inline-flex items-center rounded-[var(--radius)] bg-[rgba(210,166,121,0.24)] px-2 py-1 text-[0.72rem] text-[var(--ink-light)]"
-                          >
-                            #{tag.value}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </header>
+                    {noteQuery.data.tags.map((tag) => (
+                      <span
+                        key={tag.value}
+                        className="rounded-[var(--radius)] bg-[rgba(210,166,121,0.2)] px-1.5 py-0.5 text-[0.68rem] text-[var(--ink-muted)]"
+                      >
+                        #{tag.value}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-                  <div
-                    className="overflow-hidden rounded-[var(--radius)] border border-[var(--line)] bg-[var(--parchment)] px-4 py-3"
-                    data-testid="preview-panel"
-                    onClick={(event) => {
-                      const target = event.target as HTMLElement
-                      const anchor = target.closest('a')
-                      const href = anchor?.getAttribute('href')
-                      if (href?.startsWith('/notes/')) {
-                        event.preventDefault()
-                        const decoded = decodeURIComponent(href.replace('/notes/', ''))
-                        selectNote(decoded)
-                      }
-                    }}
-                    dangerouslySetInnerHTML={{ __html: noteQuery.data.previewHtml }}
-                  />
+                <div
+                  className="preview-panel px-4 py-3 text-sm"
+                  data-testid="preview-panel"
+                  onClick={(event) => {
+                    const target = event.target as HTMLElement
+                    const anchor = target.closest('a')
+                    const href = anchor?.getAttribute('href')
+                    if (href?.startsWith('/notes/')) {
+                      event.preventDefault()
+                      const decoded = decodeURIComponent(href.replace('/notes/', ''))
+                      selectNote(decoded)
+                    }
+                  }}
+                  dangerouslySetInnerHTML={{ __html: noteQuery.data.previewHtml }}
+                />
 
-                  <section className="flex flex-col gap-2">
-                    <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[rgba(240,232,222,0.46)] p-3" data-testid="wikilinks-card">
-                      <h3 className="mb-2 font-['Newsreader'] text-[1rem]">Wikilinks</h3>
-                      <div className="flex flex-col gap-1 text-[0.82rem] text-[var(--ink-light)]">
-                        {noteQuery.data.wikilinks.map((link) => (
-                          <button
-                            key={`${link.label}-${link.target}`}
-                            className={resultButtonClass}
-                            type="button"
-                            onClick={() => link.resolvedPath && selectNote(link.resolvedPath)}
-                          >
-                            {link.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[rgba(240,232,222,0.46)] p-3" data-testid="backlinks-card">
-                      <h3 className="mb-2 font-['Newsreader'] text-[1rem]">Backlinks</h3>
-                      <div className="flex flex-col gap-1 text-[0.82rem] text-[var(--ink-light)]">
+                {noteQuery.data.backlinks.length > 0 ? (
+                  <section className="border-t border-[var(--line)] px-4 py-3 text-[0.82rem] text-[var(--ink-light)]">
+                    <div data-testid="backlinks-card">
+                      <h3 className="mb-1 text-[0.7rem] uppercase tracking-[0.16em] text-[var(--ink-muted)]">Backlinks</h3>
+                      <div className="flex flex-col">
                         {noteQuery.data.backlinks.map((link) => (
                           <button
                             key={link.path}
@@ -391,37 +375,23 @@ export function VaultPage() {
                             type="button"
                             onClick={() => selectNote(link.path)}
                           >
-                            <strong className="block text-[var(--ink)]">{link.title}</strong>
-                            <div className={noteSubtitleClass}>{link.snippet}</div>
+                            <strong className="text-[var(--ink)]">{link.title}</strong>
+                            <span className="ml-1.5 text-[0.75rem] text-[var(--ink-muted)]">{link.snippet}</span>
                           </button>
                         ))}
                       </div>
                     </div>
-
-                    <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[rgba(240,232,222,0.46)] p-3" data-testid="tags-tasks-card">
-                      <h3 className="mb-2 font-['Newsreader'] text-[1rem]">Tasks</h3>
-                      <div className="flex flex-col gap-1.5 text-[0.82rem] text-[var(--ink-light)]">
-                        {noteQuery.data.tasks.map((task) => (
-                          <span
-                            key={task.text}
-                            className="inline-flex items-center rounded-[var(--radius)] bg-[rgba(210,166,121,0.24)] px-2 py-1 text-[0.72rem] text-[var(--ink-light)]"
-                          >
-                            {task.isCompleted ? 'Done' : 'Open'} · {task.text}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
                   </section>
-                </article>
-              ) : (
-                <section className={`${cardClass} grid min-h-[50svh] place-items-center p-6 text-center text-[var(--ink-light)]`}>
-                  <div>
-                    <h2 className="font-['Newsreader'] text-2xl">Open a note</h2>
-                    <p className={`mt-2 ${noteSubtitleClass}`}>Browse the vault or search to start reading.</p>
-                  </div>
-                </section>
-              )}
-            </div>
+                ) : null}
+              </article>
+            ) : (
+              <div className="grid min-h-[50svh] place-items-center px-4 text-center text-[var(--ink-muted)]">
+                <div>
+                  <h2 className="font-['Newsreader'] text-xl">Open a note</h2>
+                  <p className={`mt-1 ${noteSubtitleClass}`}>Browse the vault or search to start reading.</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className={activeTab === 'edit' ? 'block' : 'hidden'}>
