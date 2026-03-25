@@ -1,0 +1,49 @@
+# Local design and browser automation artifacts
+designs/
+.playwright-mcp/
+example-com.png
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and local overrides
+.env
+.env.*
+!.env.example
+*.local
+
+# Node / frontend
+node_modules/
+dist/
+coverage/
+vitest-report/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+src/pyrite-web/node_modules/
+src/pyrite-web/dist/
+src/pyrite-web/.vite/
+
+# .NET build output
+bin/
+obj/
+TestResults/
+artifacts/
+*.user
+*.rsuser
+*.suo
+
+# Playwright / browser test output
+playwright-report/
+test-results/
+
+# Local tooling caches
+.cache/
+.tmp/
+tmp/
