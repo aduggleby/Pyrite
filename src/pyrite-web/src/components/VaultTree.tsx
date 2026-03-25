@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, FileText, Folder } from 'lucide-react'
+import { ChevronDown, FileText, Folder } from 'lucide-react'
 import type { VaultNodeDto } from '../types'
 
 interface VaultTreeProps {
@@ -55,7 +55,6 @@ function TreeNode({
       onClick={() => onSelect(node.path)}
     >
       <span className="flex items-center gap-2 text-[0.82rem]">
-        <ChevronRight size={16} className="text-[var(--ink-muted)]" />
         <FileText size={16} className="text-[var(--accent)]" />
         <span>{node.name}</span>
       </span>
