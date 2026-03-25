@@ -2,6 +2,7 @@
 designs/
 .playwright-mcp/
 example-com.png
+.dev-workspace/
 
 # OS and editor files
 .DS_Store
@@ -43,6 +44,7 @@ src/Pyrite.Api/wwwroot/
 # Playwright / browser test output
 playwright-report/
 test-results/
+src/pyrite-web/test-results/
 
 # Local tooling caches
 .cache/

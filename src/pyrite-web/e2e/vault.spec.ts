@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
 
-const inboxPath = '/home/alex/Source/Pyrite/sample-vault/Inbox.md'
+const inboxPath = '/home/alex/Source/Pyrite/dev/sample-vault/Inbox.md'
 const uploadPath = '/home/alex/Source/Pyrite/src/pyrite-web/public/favicon.svg'
 
 test('login, edit, upload, and trigger merge review', async ({ page }) => {
@@ -35,7 +35,7 @@ test('login, edit, upload, and trigger merge review', async ({ page }) => {
     await expect(page.getByText('Merge Review')).toBeVisible()
   } finally {
     await fs.writeFile(inboxPath, originalInbox)
-    const attachmentsDir = path.join('/home/alex/Source/Pyrite/sample-vault', '.attachments')
+    const attachmentsDir = path.join('/home/alex/Source/Pyrite/dev/sample-vault', '.attachments')
     await fs.rm(attachmentsDir, { recursive: true, force: true })
   }
 })

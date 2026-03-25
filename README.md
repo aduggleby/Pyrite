@@ -36,6 +36,45 @@ This is intentionally a convenience tradeoff for single-user self-hosting. It is
 
 ## Local Development
 
+### Scripted Docker Dev
+
+The recommended local workflow runs everything in Docker against a copied seed vault.
+
+```bash
+./run-dev.sh
+```
+
+This starts two containers:
+
+- `pyrite-dev`: the Pyrite app on `http://localhost:18100`
+- `pyrite-dev-vault`: a sidecar shell container that mounts the same `/vault`
+
+The sidecar is useful for inspecting or modifying the mounted vault while Pyrite is running:
+
+```bash
+docker exec -it pyrite-dev-vault sh
+```
+
+The committed seed vault lives in [`dev/duck-vault`](/home/alex/Source/Pyrite/dev/duck-vault) and contains about fifty duck-focused markdown notes across four top-level folders and multiple subfolders.
+
+`./run-dev.sh` copies that seed vault into `.dev-workspace/duck-vault` the first time it runs. After that, the workspace persists across restarts so edits remain available.
+
+Stop the dev stack:
+
+```bash
+./stop-dev.sh
+```
+
+Stop it and reset the workspace vault back to a fresh copy of the committed duck seed set:
+
+```bash
+./stop-dev.sh --volumes
+```
+
+`.dev-workspace/` is intentionally gitignored.
+
+### Direct Local Tooling
+
 Backend defaults:
 
 - HTTP: `18100`
@@ -59,7 +98,7 @@ npm install
 npm run dev
 ```
 
-The development launch profile points at [`sample-vault/Inbox.md`](/home/alex/Source/Pyrite/sample-vault/Inbox.md) and uses `alex` / `password`.
+The development launch profile points at [`dev/sample-vault/Inbox.md`](/home/alex/Source/Pyrite/dev/sample-vault/Inbox.md) and uses `alex` / `password`.
 
 ## Tests
 
@@ -90,6 +129,8 @@ Build the image:
 ```bash
 docker build -t pyrite .
 ```
+
+For the local dev stack, prefer [`compose.dev.yml`](/home/alex/Source/Pyrite/compose.dev.yml) through `./run-dev.sh` and `./stop-dev.sh`.
 
 Run it:
 

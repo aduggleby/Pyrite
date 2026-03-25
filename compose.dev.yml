@@ -1,0 +1,25 @@
+services:
+  pyrite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pyrite-dev
+    environment:
+      ASPNETCORE_URLS: http://+:18100
+      Pyrite__VaultRoot: /vault
+      Pyrite__Auth__Username: alex
+      Pyrite__Auth__PasswordSha256: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+      Pyrite__Uploads__MaxBytes: 10000000
+    ports:
+      - "18100:18100"
+    volumes:
+      - ./.dev-workspace/duck-vault:/vault
+    restart: unless-stopped
+
+  vault-sidecar:
+    image: alpine:3.22
+    container_name: pyrite-dev-vault
+    command: ["sh", "-c", "sleep infinity"]
+    volumes:
+      - ./.dev-workspace/duck-vault:/vault
+    restart: unless-stopped

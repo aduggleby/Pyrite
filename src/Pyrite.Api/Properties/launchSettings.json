@@ -8,7 +8,7 @@
       "applicationUrl": "http://localhost:18100",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Pyrite__VaultRoot": "/home/alex/Source/Pyrite/sample-vault",
+        "Pyrite__VaultRoot": "/home/alex/Source/Pyrite/dev/sample-vault",
         "Pyrite__Auth__Username": "alex",
         "Pyrite__Auth__PasswordSha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
       }
@@ -20,7 +20,7 @@
       "applicationUrl": "https://localhost:18101;http://localhost:18100",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Pyrite__VaultRoot": "/home/alex/Source/Pyrite/sample-vault",
+        "Pyrite__VaultRoot": "/home/alex/Source/Pyrite/dev/sample-vault",
         "Pyrite__Auth__Username": "alex",
         "Pyrite__Auth__PasswordSha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
       }
