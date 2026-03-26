@@ -155,7 +155,10 @@ test('15a. toggles a task checkbox from View mode and saves the markdown', async
     const firstTask = page.getByTestId('preview-panel').locator('input[type="checkbox"]').first()
     await expect(firstTask).not.toBeChecked()
     await firstTask.click()
+    await expect(firstTask).toBeChecked()
     await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('- [x] Verify the migration timeline note')
+    await page.reload()
+    await expect(page.getByTestId('preview-panel').locator('input[type="checkbox"]').first()).toBeChecked()
   } finally {
     await fs.writeFile(startHerePath, original)
   }

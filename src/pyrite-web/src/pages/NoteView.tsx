@@ -59,8 +59,6 @@ export function NoteView() {
             const checkbox = target.closest('input[type="checkbox"]') as HTMLInputElement | null
 
             if (checkbox) {
-              event.preventDefault()
-
               if (isTaskTogglePending) {
                 return
               }
