@@ -30,7 +30,7 @@ async function openMarshGuide(page: import('@playwright/test').Page) {
   await page.getByTestId('tree-folder-toggle-02-Habitats').click()
   await page.getByTestId('tree-folder-toggle-02-Habitats__marshes').click()
   await page.getByRole('button', { name: /^Shallow Marsh Guide$/i }).click()
-  await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
+  await expect(page.getByTestId('note-title')).toHaveText('02-Habitats / marshes / Shallow Marsh Guide')
   await expect(page).toHaveURL(new RegExp(`/view/${encodeURIComponent('02-Habitats/marshes/Shallow Marsh Guide.md')}$`))
 }
 
@@ -38,7 +38,7 @@ async function openAmericanWigeon(page: import('@playwright/test').Page) {
   await page.getByTestId('tree-folder-toggle-01-Species').click()
   await page.getByTestId('tree-folder-toggle-01-Species__dabbling').click()
   await page.getByRole('button', { name: /^american-wigeon$/i }).click()
-  await expect(page.getByTestId('note-title')).toHaveText('american-wigeon')
+  await expect(page.getByTestId('note-title')).toHaveText('01-Species / dabbling / american-wigeon')
   await expect(page).toHaveURL(new RegExp(`/view/${encodeURIComponent('01-Species/dabbling/american-wigeon.md')}$`))
 }
 
@@ -82,7 +82,6 @@ test('5. renders the top-level duck folders', async ({ page }) => {
 test('6. opens the starter note from the tree', async ({ page }) => {
   await login(page)
   await openStartHere(page)
-  await expect(page.getByTestId('note-path')).toContainText('00-Start-Here.md')
 })
 
 test('7. searches by filename', async ({ page }) => {
@@ -90,21 +89,28 @@ test('7. searches by filename', async ({ page }) => {
   await page.getByPlaceholder('Files, text, tags...').fill('mallard')
   await expect(page).toHaveURL(/\/search\/mallard$/)
   await page.getByTestId('search-result-01-Species__dabbling__mallard.md').click()
-  await expect(page.getByTestId('note-title')).toHaveText('mallard')
+  await expect(page.getByTestId('note-title')).toHaveText('01-Species / dabbling / mallard')
 })
 
 test('8. searches by content', async ({ page }) => {
   await login(page)
   await page.getByPlaceholder('Files, text, tags...').fill('migration pushes')
   await page.getByTestId('search-result-02-Habitats__lakes__Open Lake Survey.md').click()
-  await expect(page.getByTestId('note-title')).toHaveText('Open Lake Survey')
+  await expect(page.getByTestId('note-title')).toHaveText('02-Habitats / lakes / Open Lake Survey')
+})
+
+test('8a. highlights matched terms in search results', async ({ page }) => {
+  await login(page)
+  await page.getByPlaceholder('Files, text, tags...').fill('migration pushes')
+  const result = page.getByTestId('search-result-02-Habitats__lakes__Open Lake Survey.md')
+  await expect(result.getByTestId('search-highlight')).toContainText(['migration', 'pushes'])
 })
 
 test('9. requires all unquoted search terms but not their order', async ({ page }) => {
   await login(page)
   await page.getByPlaceholder('Files, text, tags...').fill('pushes migration')
   await page.getByTestId('search-result-02-Habitats__lakes__Open Lake Survey.md').click()
-  await expect(page.getByTestId('note-title')).toHaveText('Open Lake Survey')
+  await expect(page.getByTestId('note-title')).toHaveText('02-Habitats / lakes / Open Lake Survey')
 })
 
 test('10. treats quoted search text as an exact phrase', async ({ page }) => {
@@ -113,7 +119,7 @@ test('10. treats quoted search text as an exact phrase', async ({ page }) => {
   await expect(page.getByText('No results')).toBeVisible()
   await page.getByPlaceholder('Search vault...').fill('"migration pushes"')
   await page.getByTestId('search-result-02-Habitats__lakes__Open Lake Survey.md').click()
-  await expect(page.getByTestId('note-title')).toHaveText('Open Lake Survey')
+  await expect(page.getByTestId('note-title')).toHaveText('02-Habitats / lakes / Open Lake Survey')
 })
 
 test('11. shows the development login shortcut in dev mode', async ({ page }) => {
@@ -188,7 +194,7 @@ test('18. navigates from a preview wikilink', async ({ page }) => {
   await login(page)
   await openStartHere(page)
   await page.getByTestId('preview-panel').getByRole('link', { name: 'Shallow Marsh Guide' }).click()
-  await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
+  await expect(page.getByTestId('note-title')).toHaveText('02-Habitats / marshes / Shallow Marsh Guide')
 })
 
 test('19. does not show a separate wikilinks panel', async ({ page }) => {
@@ -197,17 +203,17 @@ test('19. does not show a separate wikilinks panel', async ({ page }) => {
   await expect(page.getByTestId('wikilinks-card')).toHaveCount(0)
 })
 
-test('20. shows backlinks for Shallow Marsh Guide', async ({ page }) => {
+test('20. does not show a separate backlinks panel', async ({ page }) => {
   await login(page)
   await openMarshGuide(page)
-  await expect(page.getByTestId('backlinks-card')).toContainText('Mallard')
+  await expect(page.getByTestId('backlinks-card')).toHaveCount(0)
 })
 
 test('21. opens a note from search results', async ({ page }) => {
   await login(page)
   await page.getByPlaceholder('Files, text, tags...').fill('behavior')
   await page.getByTestId('search-result-04-Research__behavior__Duck Behavior Baseline.md').click()
-  await expect(page.getByTestId('note-title')).toHaveText('Duck Behavior Baseline')
+  await expect(page.getByTestId('note-title')).toHaveText('04-Research / behavior / Duck Behavior Baseline')
 })
 
 test('22. saves edits to the workspace file and returns to View mode', async ({ page }) => {

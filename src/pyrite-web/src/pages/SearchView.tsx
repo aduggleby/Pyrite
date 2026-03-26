@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
+import { Fragment } from 'react'
 import { searchNotes } from '../lib/api'
 import { useVault } from './VaultLayout'
 
@@ -9,6 +10,7 @@ const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
 export function SearchView() {
   const navigate = useNavigate()
   const { notePath, searchText, selectNote } = useVault()
+  const highlightTerms = parseTerms(searchText ?? '')
 
   const searchQuery = useQuery({
     queryKey: ['search', searchText],
@@ -57,8 +59,12 @@ export function SearchView() {
               type="button"
               onClick={() => selectNote(result.path)}
             >
-              <strong className="block text-sm text-[var(--ink)]">{result.title}</strong>
-              <span className={noteSubtitleClass}>{result.snippet}</span>
+              <strong className="block text-sm text-[var(--ink)]">
+                {renderHighlightedText(result.title, highlightTerms)}
+              </strong>
+              <span className={noteSubtitleClass}>
+                {renderHighlightedText(result.snippet, highlightTerms)}
+              </span>
             </button>
           ))}
         </div>
@@ -67,4 +73,50 @@ export function SearchView() {
       ) : null}
     </>
   )
+}
+
+function parseTerms(query: string) {
+  if (!query.trim()) {
+    return []
+  }
+
+  return Array.from(
+    new Set(
+      Array.from(query.matchAll(/"([^"]+)"|(\S+)/g), (match) => (match[1] || match[2] || '').trim())
+        .filter(Boolean),
+    ),
+  )
+}
+
+function renderHighlightedText(text: string, terms: string[]) {
+  if (!text || terms.length === 0) {
+    return text
+  }
+
+  const escapedTerms = terms
+    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .sort((left, right) => right.length - left.length)
+
+  if (escapedTerms.length === 0) {
+    return text
+  }
+
+  const pattern = new RegExp(`(${escapedTerms.join('|')})`, 'gi')
+  const parts = text.split(pattern)
+
+  return parts.map((part, index) => {
+    const isMatch = terms.some((term) => part.toLowerCase() === term.toLowerCase())
+
+    return isMatch ? (
+      <mark
+        key={`${part}-${index}`}
+        className="rounded bg-[rgba(210,166,121,0.3)] px-0.5 text-[var(--ink)]"
+        data-testid="search-highlight"
+      >
+        {part}
+      </mark>
+    ) : (
+      <Fragment key={`${part}-${index}`}>{part}</Fragment>
+    )
+  })
 }

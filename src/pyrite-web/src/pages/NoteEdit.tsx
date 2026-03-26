@@ -5,7 +5,7 @@ import { useVault } from './VaultLayout'
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
 
 export function NoteEdit() {
-  const { noteQuery, draft, setDraft, noteMeta } = useVault()
+  const { noteQuery, draft, setDraft } = useVault()
 
   if (!noteQuery.data) {
     return (
@@ -20,11 +20,6 @@ export function NoteEdit() {
 
   return (
     <>
-      <div className="border-b border-[var(--line)] px-4 py-2">
-        <p className={noteSubtitleClass}>
-          {noteQuery.data.path}{noteMeta.dirty ? ' *' : ''}
-        </p>
-      </div>
       <CodeMirror value={draft} height="calc(100svh - 140px)" extensions={[markdown()]} onChange={setDraft} />
     </>
   )

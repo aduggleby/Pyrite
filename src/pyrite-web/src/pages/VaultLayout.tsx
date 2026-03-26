@@ -189,8 +189,8 @@ export function VaultLayout() {
   const headerTitle = (() => {
     switch (activeTab) {
       case 'vault': return 'Pyrite'
-      case 'view': return noteQuery.data?.title ?? 'View'
-      case 'edit': return noteQuery.data ? 'Editing' : 'Edit'
+      case 'view': return formatHeaderPath(noteQuery.data?.path) ?? 'View'
+      case 'edit': return formatHeaderPath(noteQuery.data?.path) ?? 'Edit'
       case 'search': return 'Search'
     }
   })()
@@ -274,7 +274,7 @@ export function VaultLayout() {
         <main className="min-h-svh bg-[radial-gradient(circle_at_top,rgba(210,166,121,0.18),transparent_42%),linear-gradient(180deg,var(--parchment),var(--parchment-dark))] text-[var(--ink)]">
           <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[rgba(250,246,241,0.88)] px-3 py-2 backdrop-blur-sm">
             <h1
-              className="font-['Newsreader'] text-[1.15rem] font-semibold"
+              className="font-['Newsreader'] text-[1.05rem] font-semibold leading-tight"
               data-testid={activeTab === 'view' || activeTab === 'edit' ? 'note-title' : undefined}
             >
               {headerTitle}
@@ -401,4 +401,15 @@ function toggleTaskAtIndex(content: string, taskIndex: number, isCompleted: bool
 
     return `${prefix}${isCompleted ? 'x' : ' '}${suffix}`
   })
+}
+
+function formatHeaderPath(notePath?: string) {
+  if (!notePath) {
+    return null
+  }
+
+  return notePath
+    .split('/')
+    .map((segment) => segment.replace(/\.md$/i, ''))
+    .join(' / ')
 }

@@ -1,8 +1,6 @@
 import { useVault } from './VaultLayout'
 
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
-const resultButtonClass =
-  'w-full rounded-[var(--radius)] px-3 py-2 text-left transition-colors hover:bg-[rgba(210,166,121,0.16)]'
 
 export function NoteView() {
   const { noteQuery, noteMeta, selectNote, toggleTask, isTaskTogglePending } = useVault()
@@ -37,20 +35,6 @@ export function NoteView() {
 
     return (
       <article>
-        <div className="flex items-center gap-1.5 border-b border-[var(--line)] px-4 py-2">
-          <p className={noteSubtitleClass} data-testid="note-path">
-            {noteQuery.data.path}
-          </p>
-          {noteQuery.data.tags.map((tag) => (
-            <span
-              key={tag.value}
-              className="rounded-[var(--radius)] bg-[rgba(210,166,121,0.2)] px-1.5 py-0.5 text-[0.68rem] text-[var(--ink-muted)]"
-            >
-              #{tag.value}
-            </span>
-          ))}
-        </div>
-
         <div
           className="preview-panel px-4 py-3 text-sm"
           data-testid="preview-panel"
@@ -87,27 +71,6 @@ export function NoteView() {
           }}
           dangerouslySetInnerHTML={{ __html: noteQuery.data.previewHtml }}
         />
-
-        {noteQuery.data.backlinks.length > 0 ? (
-          <section className="border-t border-[var(--line)] px-4 py-3 text-[0.82rem] text-[var(--ink-light)]">
-            <div data-testid="backlinks-card">
-              <h3 className="mb-1 text-[0.7rem] uppercase tracking-[0.16em] text-[var(--ink-muted)]">Backlinks</h3>
-              <div className="flex flex-col">
-                {noteQuery.data.backlinks.map((link) => (
-                  <button
-                    key={link.path}
-                    className={resultButtonClass}
-                    type="button"
-                    onClick={() => selectNote(link.path)}
-                  >
-                    <strong className="text-[var(--ink)]">{link.title}</strong>
-                    <span className="ml-1.5 text-[0.75rem] text-[var(--ink-muted)]">{link.snippet}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
       </article>
     )
   }

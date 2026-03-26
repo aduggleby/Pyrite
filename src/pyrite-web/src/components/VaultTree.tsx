@@ -4,6 +4,7 @@ import type { VaultNodeDto } from '../types'
 
 const storageKey = 'pyrite.vaultTree.expanded'
 const hiddenDirectoryNames = new Set(['.attachments'])
+const rowLabelClassName = 'text-sm leading-5'
 
 interface VaultTreeProps {
   nodes: VaultNodeDto[]
@@ -91,7 +92,7 @@ function TreeNode({
             <ChevronRight data-testid="tree-folder-toggle-icon" size={14} className="text-[var(--ink-muted)]" />
           )}
           <Folder data-testid="tree-folder-icon" size={14} className="text-[var(--accent)]" />
-          <span>{label}</span>
+          <span className={rowLabelClassName}>{label}</span>
         </button>
         {isExpanded ? (
           <div className="ml-3.5 flex flex-col gap-0.5 border-l border-[var(--line)] pl-3">
@@ -124,7 +125,7 @@ function TreeNode({
     >
       <span className="flex items-center gap-2 text-sm">
         <FileText data-testid="tree-note-icon" size={14} className="text-[var(--accent)]" />
-        <span>{label}</span>
+        <span className={rowLabelClassName}>{label}</span>
       </span>
     </button>
   )

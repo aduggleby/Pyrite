@@ -1,23 +1,28 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { developmentLogin, login } from '../lib/api'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
   const loginMutation = useMutation({
     mutationFn: () => login(username, password),
-    onSuccess: () => {
+    onSuccess: async (session) => {
+      queryClient.setQueryData(['session'], session)
+      await queryClient.invalidateQueries({ queryKey: ['session'] })
       void navigate({ to: '/' })
     },
   })
 
   const developmentLoginMutation = useMutation({
     mutationFn: developmentLogin,
-    onSuccess: () => {
+    onSuccess: async (session) => {
+      queryClient.setQueryData(['session'], session)
+      await queryClient.invalidateQueries({ queryKey: ['session'] })
       void navigate({ to: '/' })
     },
   })
