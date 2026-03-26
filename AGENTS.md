@@ -36,6 +36,7 @@ These are the current project decisions. Follow them unless the user changes the
 - Markdown engine: `Markdig`
 - Merge engine: `DiffPlex` behind an internal merge service interface
 - Diff UI: `@codemirror/merge`
+- Build and release system: `Ando` via [`build.csando`](/home/alex/Source/Pyrite/build.csando)
 
 ## Hard Constraints
 
@@ -174,6 +175,13 @@ Use `./run-dev.sh` for the interactive Docker dev workflow. It clears `logs/dev/
   - upload attachment
   - trigger conflict
   - review and approve merge
+
+## Build And Release
+
+- Use `ando` as the primary build entrypoint for repository-wide verification and release work.
+- `ando run` must remain the boring default for backend restore/build/test plus frontend install/test/build.
+- `ando run -p publish --dind` is the image publish path and must push `ghcr.io/aduggleby/pyrite` by default unless `GHCR_IMAGE` overrides it.
+- Keep the application version in [`src/Pyrite.Api/Pyrite.Api.csproj`](/home/alex/Source/Pyrite/src/Pyrite.Api/Pyrite.Api.csproj) so `ando bump` and `ando release` can version both the repository tag and the image tag together.
 
 ## Working Style
 

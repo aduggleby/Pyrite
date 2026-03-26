@@ -5,6 +5,8 @@ import { LoginPage } from './LoginPage'
 const navigateMock = vi.fn()
 const loginMock = vi.fn()
 const developmentLoginMock = vi.fn()
+const setQueryDataMock = vi.fn()
+const invalidateQueriesMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
@@ -14,12 +16,16 @@ vi.mock('@tanstack/react-query', async () => {
   const actual = await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query')
   return {
     ...actual,
-    useMutation: ({ mutationFn, onSuccess }: { mutationFn: () => Promise<unknown>; onSuccess?: () => void }) => ({
+    useQueryClient: () => ({
+      setQueryData: setQueryDataMock,
+      invalidateQueries: invalidateQueriesMock,
+    }),
+    useMutation: ({ mutationFn, onSuccess }: { mutationFn: () => Promise<unknown>; onSuccess?: (value: unknown) => void | Promise<void> }) => ({
       isPending: false,
       isError: false,
       mutate: async () => {
-        await mutationFn()
-        onSuccess?.()
+        const result = await mutationFn()
+        await onSuccess?.(result)
       },
     }),
   }

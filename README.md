@@ -134,6 +134,36 @@ Browser E2E:
 ./test-app.sh
 ```
 
+## Build (ANDO)
+
+Pyrite includes [`build.csando`](/home/alex/Source/Pyrite/build.csando) for repository-wide builds and release publishing.
+
+Run the default verification build:
+
+```bash
+ando run
+```
+
+Publish the release image to GHCR:
+
+```bash
+ando run -p publish --dind
+```
+
+Default image name:
+
+```text
+ghcr.io/aduggleby/pyrite
+```
+
+Override it when needed:
+
+```bash
+GHCR_IMAGE=ghcr.io/your-org/pyrite ando run -p publish --dind
+```
+
+`ando release [patch|minor|major]` is supported. The version comes from [`src/Pyrite.Api/Pyrite.Api.csproj`](/home/alex/Source/Pyrite/src/Pyrite.Api/Pyrite.Api.csproj), and the publish profile tags both the container image and the git repository as `v<version>`.
+
 ## Docker
 
 Build the image:
@@ -163,7 +193,7 @@ Replace the image reference and host path for your environment.
 ```yaml
 services:
   pyrite:
-    image: ghcr.io/your-org/pyrite:latest
+    image: ghcr.io/aduggleby/pyrite:latest
     restart: unless-stopped
     environment:
       PYRITE__VAULTROOT: /vault

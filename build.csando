@@ -1,0 +1,82 @@
+// <file>
+// <summary>
+// ANDO build script for Pyrite.
+//
+// Usage:
+// - `ando run`                   : restore, build, and test backend + frontend
+// - `ando run -p publish --dind` : publish app artifacts, build multi-arch image, push to GHCR
+// - `ando release [patch|minor|major]`
+//
+// Notes:
+// - Set the app version in `src/Pyrite.Api/Pyrite.Api.csproj`.
+// - Override the image name with `GHCR_IMAGE=ghcr.io/<owner>/pyrite`.
+// - Docker publishing requires registry auth. ANDO can use `GITHUB_TOKEN` when available.
+// </summary>
+// </file>
+
+Ando.UseImage("mcr.microsoft.com/dotnet/sdk:10.0");
+
+var publish = DefineProfile("publish");
+
+var api = Dotnet.Project("./src/Pyrite.Api/Pyrite.Api.csproj");
+var apiTests = Dotnet.Project("./tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj");
+var frontend = Directory("./src/pyrite-web");
+
+var version = api.Version;
+var configuration = global::Ando.Workflow.Configuration.Release;
+var artifacts = Root / "artifacts";
+var publishDir = artifacts / "publish" / "Pyrite.Api";
+
+var ghcrOwner =
+    Env("GITHUB_REPOSITORY_OWNER", required: false) ??
+    Env("GHCR_OWNER", required: false) ??
+    "aduggleby";
+
+var ghcrImage =
+    Env("GHCR_IMAGE", required: false) ??
+    $"ghcr.io/{ghcrOwner}/pyrite";
+
+Log.Info($"Building Pyrite version: {version}");
+
+Dotnet.Restore(apiTests);
+Dotnet.Build(api, o =>
+{
+    o.Configuration = configuration;
+    o.NoRestore = true;
+});
+
+Dotnet.Test(apiTests, o =>
+{
+    o.Configuration = configuration;
+    o.NoRestore = true;
+    o.NoBuild = false;
+});
+
+Node.Install();
+Npm.Ci(frontend);
+Npm.Test(frontend);
+Npm.Build(frontend);
+
+if (publish)
+{
+    Dotnet.Publish(api, o => o
+        .WithConfiguration(configuration)
+        .SkipRestore()
+        .SkipBuild()
+        .Output(publishDir));
+
+    Docker.Install();
+
+    Log.Info($"Building and pushing multi-arch image: {ghcrImage}:{version}");
+    Docker.Build("./Dockerfile", o => o
+        .WithPlatforms("linux/amd64", "linux/arm64")
+        .WithContext(".")
+        .WithTag($"{ghcrImage}:{version}")
+        .WithTag($"{ghcrImage}:latest")
+        .WithPush());
+
+    Git.Tag($"v{version}", o => o.WithSkipIfExists());
+    Git.PushTags();
+
+    Ando.CopyZippedArtifactsToHost("artifacts", "./artifacts");
+}
