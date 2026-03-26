@@ -14,8 +14,8 @@ public sealed partial class MarkdownService
 
     public string RenderHtml(string notePath, string content, Func<string, string, string?> resolveWikiPath)
     {
-        var transformed = TransformCallouts(TransformWikilinks(notePath, content, resolveWikiPath));
-        return Markdown.ToHtml(transformed, _pipeline);
+        var transformed = TransformTasks(TransformCallouts(TransformWikilinks(notePath, content, resolveWikiPath)));
+        return EnableTaskCheckboxes(Markdown.ToHtml(transformed, _pipeline));
     }
 
     public IReadOnlyList<WikilinkDto> ExtractWikilinks(string notePath, string content, Func<string, string, string?> resolveWikiPath)
@@ -75,6 +75,24 @@ public sealed partial class MarkdownService
             var heading = string.IsNullOrWhiteSpace(title) ? kind : $"{kind}: {title}";
             return $"> **{heading}**";
         });
+    }
+
+    private static string TransformTasks(string content)
+    {
+        return TaskRegex().Replace(content, match =>
+        {
+            var text = match.Groups["text"].Value.Trim();
+            var isCompleted = string.Equals(match.Groups["state"].Value, "x", StringComparison.OrdinalIgnoreCase);
+            var checkedAttribute = isCompleted ? " checked" : string.Empty;
+            return $"- <input type=\"checkbox\"{checkedAttribute} /> {text}";
+        });
+    }
+
+    private static string EnableTaskCheckboxes(string html)
+    {
+        return html
+            .Replace("disabled=\"\"", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" disabled", string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     [GeneratedRegex(@"\[\[(?<target>[^\]|#]+)(?:#[^\]|]+)?(?:\|(?<label>[^\]]+))?\]\]")]

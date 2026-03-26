@@ -11,9 +11,9 @@ test.describe.configure({ mode: 'serial' })
 
 async function login(page: import('@playwright/test').Page, password = 'password', waitForShell = true) {
   await page.goto('/login')
-  await page.getByPlaceholder('Username').fill('alex')
-  await page.getByPlaceholder('Password').fill(password)
-  await page.getByRole('button', { name: 'Log In' }).click()
+  await page.getByPlaceholder('Enter username').fill('alex')
+  await page.getByPlaceholder('Enter password').fill(password)
+  await page.getByRole('button', { name: 'Sign In' }).click()
   if (waitForShell) {
     await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
     await expect(page.getByTestId('vault-tree-panel').getByText('01-Species').first()).toBeVisible({ timeout: 15000 })
@@ -21,18 +21,25 @@ async function login(page: import('@playwright/test').Page, password = 'password
 }
 
 async function openStartHere(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /00-Start-Here\.md/i }).click()
+  await page.getByRole('button', { name: /^00-Start-Here$/i }).click()
   await expect(page.getByTestId('note-title')).toHaveText('00-Start-Here')
+  await expect(page).toHaveURL(/\/view\/00-Start-Here\.md$/)
 }
 
 async function openMarshGuide(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /Shallow Marsh Guide\.md/i }).click()
+  await page.getByTestId('tree-folder-toggle-02-Habitats').click()
+  await page.getByTestId('tree-folder-toggle-02-Habitats__marshes').click()
+  await page.getByRole('button', { name: /^Shallow Marsh Guide$/i }).click()
   await expect(page.getByTestId('note-title')).toHaveText('Shallow Marsh Guide')
+  await expect(page).toHaveURL(new RegExp(`/view/${encodeURIComponent('02-Habitats/marshes/Shallow Marsh Guide.md')}$`))
 }
 
 async function openAmericanWigeon(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /american-wigeon\.md/i }).click()
+  await page.getByTestId('tree-folder-toggle-01-Species').click()
+  await page.getByTestId('tree-folder-toggle-01-Species__dabbling').click()
+  await page.getByRole('button', { name: /^american-wigeon$/i }).click()
   await expect(page.getByTestId('note-title')).toHaveText('american-wigeon')
+  await expect(page).toHaveURL(new RegExp(`/view/${encodeURIComponent('01-Species/dabbling/american-wigeon.md')}$`))
 }
 
 async function openNoteMenu(page: import('@playwright/test').Page) {
@@ -45,12 +52,12 @@ async function saveFromEditHeader(page: import('@playwright/test').Page) {
 
 test('1. shows the login screen', async ({ page }) => {
   await page.goto('/login')
-  await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible()
 })
 
 test('2. rejects invalid credentials', async ({ page }) => {
   await login(page, 'wrong-password', false)
-  await expect(page.getByText('Login failed. Check the credentials and server setup.')).toBeVisible()
+  await expect(page.getByText('Login failed. Check your credentials.')).toBeVisible()
 })
 
 test('3. logs in with the default dev credentials', async ({ page }) => {
@@ -81,6 +88,7 @@ test('6. opens the starter note from the tree', async ({ page }) => {
 test('7. searches by filename', async ({ page }) => {
   await login(page)
   await page.getByPlaceholder('Files, text, tags...').fill('mallard')
+  await expect(page).toHaveURL(/\/search\/mallard$/)
   await page.getByTestId('search-result-01-Species__dabbling__mallard.md').click()
   await expect(page.getByTestId('note-title')).toHaveText('mallard')
 })
@@ -110,19 +118,19 @@ test('10. treats quoted search text as an exact phrase', async ({ page }) => {
 
 test('11. shows the development login shortcut in dev mode', async ({ page }) => {
   await page.goto('/login')
-  await expect(page.getByRole('button', { name: 'Use Development Login' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Development Login' })).toBeVisible()
 })
 
 test('12. logs in through the development login shortcut', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('button', { name: 'Use Development Login' }).click()
+  await page.getByRole('button', { name: 'Development Login' }).click()
   await expect(page.getByTestId('vault-tree-panel')).toBeVisible()
 })
 
 test('13. logs out back to the login screen', async ({ page }) => {
   await login(page)
   await page.getByTestId('header-logout-button').click()
-  await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible()
 })
 
 test('14. does not show a separate tasks panel on the starter note', async ({ page }) => {
@@ -138,6 +146,21 @@ test('15. shows preview content for an opened note in View mode', async ({ page 
   await expect(page.getByTestId('preview-panel')).toContainText('Duck Vault')
 })
 
+test('15a. toggles a task checkbox from View mode and saves the markdown', async ({ page }) => {
+  const original = await fs.readFile(startHerePath, 'utf8')
+
+  try {
+    await login(page)
+    await openStartHere(page)
+    const firstTask = page.getByTestId('preview-panel').locator('input[type="checkbox"]').first()
+    await expect(firstTask).not.toBeChecked()
+    await firstTask.click()
+    await expect.poll(() => fs.readFile(startHerePath, 'utf8')).toContain('- [x] Verify the migration timeline note')
+  } finally {
+    await fs.writeFile(startHerePath, original)
+  }
+})
+
 test('16. renders markdown headings and lists in View mode', async ({ page }) => {
   await login(page)
   await openAmericanWigeon(page)
@@ -146,10 +169,13 @@ test('16. renders markdown headings and lists in View mode', async ({ page }) =>
   await expect(page.getByTestId('preview-panel').getByRole('list')).toContainText('Compact body profile with practical identification notes for local testing.')
 })
 
-test('17. shows the explicit save button in edit mode', async ({ page }) => {
+test('17. shows the explicit edit button in view mode and save button in edit mode', async ({ page }) => {
   await login(page)
   await openStartHere(page)
-  await page.getByRole('button', { name: 'Edit' }).click()
+  await expect(page.getByTestId('view-edit-button')).toBeVisible()
+  await openNoteMenu(page)
+  await expect(page.getByTestId('note-menu-panel').getByRole('button', { name: 'Edit' })).toHaveCount(0)
+  await page.getByTestId('view-edit-button').click()
   await expect(page.getByTestId('edit-save-button')).toBeVisible()
   await openNoteMenu(page)
   await expect(page.getByTestId('note-menu-save-button')).toHaveCount(0)
@@ -188,7 +214,7 @@ test('22. saves edits to the workspace file and returns to View mode', async ({ 
   try {
     await login(page)
     await openStartHere(page)
-    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByTestId('view-edit-button').click()
     const editor = page.locator('.cm-content').first()
     await editor.click()
     await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+A`)
@@ -208,7 +234,7 @@ test('23. uploads an attachment and inserts the markdown link', async ({ page })
   try {
     await login(page)
     await openStartHere(page)
-    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByTestId('view-edit-button').click()
     await openNoteMenu(page)
     await page.getByTestId('attachment-input').setInputFiles(uploadPath)
     await expect(page.locator('.cm-content')).toContainText('.attachments')
@@ -238,7 +264,7 @@ test('25. opens merge review after a conflicted save', async ({ page }) => {
   try {
     await login(page)
     await openStartHere(page)
-    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByTestId('view-edit-button').click()
     const editor = page.locator('.cm-content').first()
     await fs.writeFile(startHerePath, `${original}\nRemote merge preview change.\n`)
     await editor.click()
@@ -259,7 +285,7 @@ test('26. commits merged content successfully', async ({ page }) => {
   try {
     await login(page)
     await openStartHere(page)
-    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByTestId('view-edit-button').click()
     const editor = page.locator('.cm-content').first()
     await fs.writeFile(startHerePath, remote)
     await editor.click()
