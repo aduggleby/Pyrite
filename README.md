@@ -2,6 +2,20 @@
 
 A single-user, mobile-first, self-hosted markdown vault editor. Mount an existing markdown vault, edit notes in place, and keep the filesystem as the single source of truth.
 
+## Screenshots
+
+| Login | Vault Tree |
+| --- | --- |
+| ![Pyrite login](docs/readme-screenshots/login.png) | ![Pyrite vault tree](docs/readme-screenshots/vault-tree.png) |
+
+| View | Edit |
+| --- | --- |
+| ![Pyrite note view](docs/readme-screenshots/view.png) | ![Pyrite note edit](docs/readme-screenshots/edit.png) |
+
+| Search |
+| --- |
+| ![Pyrite search](docs/readme-screenshots/search.png) |
+
 ## Deploy to TrueNAS
 
 Use the Custom App (Docker Compose) option in TrueNAS. Replace the image, host path, and credentials for your environment.
