@@ -12,6 +12,6 @@ describe('App routing', () => {
   it('renders the login route at /login', async () => {
     window.history.pushState({}, '', '/login')
     render(<App />)
-    expect(await screen.findByRole('button', { name: 'Log In' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Sign In' })).toBeInTheDocument()
   })
 })

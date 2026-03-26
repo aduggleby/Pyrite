@@ -36,9 +36,9 @@ describe('LoginPage', () => {
 
     render(<LoginPage />)
 
-    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'alex' } })
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Log In' }))
+    fireEvent.change(screen.getByPlaceholderText('Enter username'), { target: { value: 'alex' } })
+    fireEvent.change(screen.getByPlaceholderText('Enter password'), { target: { value: 'password' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
 
     await waitFor(() => {
       expect(loginMock).toHaveBeenCalledWith('alex', 'password')
