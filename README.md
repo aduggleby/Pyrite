@@ -4,17 +4,9 @@ A single-user, mobile-first, self-hosted markdown vault editor. Mount an existin
 
 ## Screenshots
 
-| Login | Vault Tree |
-| --- | --- |
-| ![Pyrite login](docs/readme-screenshots/login.png) | ![Pyrite vault tree](docs/readme-screenshots/vault-tree.png) |
-
-| View | Edit |
-| --- | --- |
-| ![Pyrite note view](docs/readme-screenshots/view.png) | ![Pyrite note edit](docs/readme-screenshots/edit.png) |
-
-| Search |
-| --- |
-| ![Pyrite search](docs/readme-screenshots/search.png) |
+| Login | Vault Tree | View | Edit | Search |
+| --- | --- | --- | --- | --- |
+| <a href="docs/readme-screenshots/login.png"><img src="docs/readme-screenshots/login.png" alt="Pyrite login" width="180"></a> | <a href="docs/readme-screenshots/vault-tree.png"><img src="docs/readme-screenshots/vault-tree.png" alt="Pyrite vault tree" width="180"></a> | <a href="docs/readme-screenshots/view.png"><img src="docs/readme-screenshots/view.png" alt="Pyrite note view" width="180"></a> | <a href="docs/readme-screenshots/edit.png"><img src="docs/readme-screenshots/edit.png" alt="Pyrite note edit" width="180"></a> | <a href="docs/readme-screenshots/search.png"><img src="docs/readme-screenshots/search.png" alt="Pyrite search" width="180"></a> |
 
 ## Deploy to TrueNAS
 

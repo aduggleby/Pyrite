@@ -21,6 +21,8 @@ RUN dotnet publish ./src/Pyrite.Api/Pyrite.Api.csproj -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+LABEL org.opencontainers.image.source="https://github.com/aduggleby/Pyrite"
+
 COPY --from=backend-build /app/publish ./
 
 ENV ASPNETCORE_URLS=http://+:18100
