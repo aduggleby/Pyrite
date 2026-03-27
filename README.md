@@ -33,7 +33,7 @@ services:
 Generate the password hash (lowercase SHA-256 hex, no trailing newline):
 
 ```bash
-printf %s "your-password" | openssl dgst -sha256 -binary | xxd -p -c 256
+printf '%s' "your-password" | openssl dgst -sha256 | awk '{print $2}'
 ```
 
 ### Reverse proxy
@@ -51,7 +51,7 @@ docker run --rm \
   -p 18100:18100 \
   -e PYRITE__VAULTROOT=/vault \
   -e PYRITE__AUTH__USERNAME=alex \
-  -e PYRITE__AUTH__PASSWORDSHA256="$(printf %s "password" | openssl dgst -sha256 -binary | xxd -p -c 256)" \
+  -e PYRITE__AUTH__PASSWORDSHA256="$(printf '%s' "password" | openssl dgst -sha256 | awk '{print $2}')" \
   -v /path/to/your/vault:/vault \
   pyrite
 ```
