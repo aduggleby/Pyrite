@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.10] - 2026-03-27
+
+### Added
+- Display the application version on the login page
+
+### Improved
+- Treat single line breaks in notes as visible line breaks
+
 ## [0.1.9] - 2026-03-27
 
 ### Improved
