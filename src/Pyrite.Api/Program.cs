@@ -1,3 +1,4 @@
+using System.Reflection;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Antiforgery;
@@ -114,8 +115,27 @@ builder.Services.AddSingleton<SearchService>();
 
 var app = builder.Build();
 
+var appVersion = Assembly
+    .GetExecutingAssembly()
+    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+    .InformationalVersion
+    .Split('+')[0]
+    ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
+    ?? "unknown";
+
 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
 var startupOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PyriteOptions>>().Value;
+
+startupLogger.LogInformation(
+    """
+    ██████  ██    ██ ██████  ██ ████████ ███████ 
+    ██   ██  ██  ██  ██   ██ ██    ██    ██      
+    ██████    ████   ██████  ██    ██    █████   
+    ██         ██    ██   ██ ██    ██    ██      
+    ██         ██    ██   ██ ██    ██    ███████
+    """);
+
+startupLogger.LogInformation("Pyrite version {AppVersion}", appVersion);
 
 startupLogger.LogInformation(
     "Pyrite starting: environment={Environment}, vaultRoot={VaultRoot}, authUsername={AuthUsername}, authUsernameDetails={AuthUsernameDetails}, authHashFingerprint={AuthHashFingerprint}, authHashDetails={AuthHashDetails}, logsDirectory={LogsDirectory}",
