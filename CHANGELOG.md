@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-03-27
+
+### Improved
+- Use an icon toggle for password visibility on the login page
+- Display the app version in the interface
+
 ## [0.1.7] - 2026-03-27
 
 ### Added
