@@ -9,6 +9,7 @@ public sealed partial class MarkdownService
 {
     private readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
+        .UseSoftlineBreakAsHardlineBreak()
         .UseYamlFrontMatter()
         .Build();
 

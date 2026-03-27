@@ -4,6 +4,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { Eye, EyeOff } from 'lucide-react'
 import { developmentLogin, login } from '../lib/api'
 
+const appVersion = __APP_VERSION__
+
 export function LoginPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -30,26 +32,7 @@ export function LoginPage() {
   })
 
   return (
-    <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-5 py-8 text-[var(--ink)]">
-      {/* Layered parchment background */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(ellipse at 30% 20%, rgba(210,166,121,0.22) 0%, transparent 50%),
-            radial-gradient(ellipse at 70% 80%, rgba(139,69,19,0.08) 0%, transparent 45%),
-            linear-gradient(180deg, var(--parchment-deeper) 0%, var(--parchment) 40%, var(--parchment-dark) 100%)
-          `,
-        }}
-      />
-
-      {/* Ruled lines — faint notebook feel */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{
-        backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 31px, var(--ink) 31px, var(--ink) 32px)',
-        backgroundPosition: '0 14px',
-      }} />
-
-      {/* Content */}
+    <main className="flex min-h-svh flex-col items-center justify-center px-5 py-8 text-[var(--ink)]">
       <div className="relative z-10 w-full max-w-[320px]">
         {/* Crystal icon */}
         <div className="mb-6 flex justify-center">
@@ -163,6 +146,10 @@ export function LoginPage() {
             </p>
           ) : null}
         </form>
+
+        <p className="mt-8 text-center text-[0.7rem] uppercase tracking-[0.18em] text-[var(--ink-muted)]">
+          Version {appVersion}
+        </p>
       </div>
     </main>
   )
