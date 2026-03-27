@@ -12,20 +12,19 @@ Build started at 2026-03-27 10:50:04
   Analyzing changes...
   Generating commit message...
   Generated commit message:
-roject files copied to container successfully
-  → Executing: docker exec d68460b4a801 rm -rf /workspace/artifacts
-  →   Timeout: 300000ms
-  → Executing: docker exec d68460b4a801 mkdir -p /workspace/artifacts
-  →   Timeout: 300000ms
-
-Workflow: build
-Script:   /home/alex/Source/Pyrite/build.csando
-Steps:    8
-
-▶ [1/8] Info: Building Pyrite version: 0.1.4
-▶ [2/8] Dotnet.Restore (Pyrite.Api.Tests)
-  → Fetching latest .NET SDK version from release metadata...
-  → Latest .NET SDK version: 10.0
+  Committed: chore(build): update csando build log with commit and sync progress
+  Detecting projects...
+  Detected projects:
+⚠   ./tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj: no version found
+  Bumping patch: 0.1.4 → 0.1.5
+  Updating project versions:
+  Changes since tag v0.1.4:
+  Claude is updating changelog files...
+  Updating version badges:
+  Committed: Bump version to 0.1.5
+  → Claude permission granted via ando.config
+  Analyzing 3 commit(s) since v0.1.4...
+Latest .NET SDK version: 10.0
   → Executing: bash -c "command -v dotnet >/dev/null && dotnet --version | grep -q '^10.0\.'"
   →   Timeout: 300000ms
   → .NET SDK 10.0 already installed
