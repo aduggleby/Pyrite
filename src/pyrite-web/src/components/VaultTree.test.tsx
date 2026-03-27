@@ -1,8 +1,69 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { VaultTree } from './VaultTree'
 
+afterEach(() => {
+  cleanup()
+})
+
 describe('VaultTree', () => {
+  it('expands and scrolls to a requested folder', async () => {
+    const onSelect = vi.fn()
+    const scrollIntoView = vi.fn()
+
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: () => null,
+        setItem: () => {},
+      },
+    })
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    const nodes = [
+      {
+        name: '01-Species',
+        path: '01-Species',
+        isDirectory: true,
+        children: [
+          {
+            name: 'dabbling',
+            path: '01-Species/dabbling',
+            isDirectory: true,
+            children: [
+              {
+                name: 'american-wigeon.md',
+                path: '01-Species/dabbling/american-wigeon.md',
+                isDirectory: false,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const { rerender } = render(<VaultTree nodes={nodes} onSelect={onSelect} />)
+
+    rerender(
+      <VaultTree
+        nodes={nodes}
+        revealRequest={{ path: '01-Species/dabbling', key: 1 }}
+        onSelect={onSelect}
+      />,
+    )
+
+    expect(await screen.findByTestId('tree-folder-toggle-01-Species__dabbling')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(scrollIntoView).toHaveBeenCalled()
+    })
+  })
+
   it('collapses folders by default and persists expanded state', () => {
     const onSelect = vi.fn()
     const storage = new Map<string, string>()
@@ -20,6 +81,12 @@ describe('VaultTree', () => {
           {
             name: '.attachments',
             path: '.attachments',
+            isDirectory: true,
+            children: [],
+          },
+          {
+            name: '.obsidian',
+            path: '.obsidian',
             isDirectory: true,
             children: [],
           },
@@ -49,6 +116,7 @@ describe('VaultTree', () => {
     )
 
     expect(screen.queryByText('.attachments')).not.toBeInTheDocument()
+    expect(screen.queryByText('.obsidian')).not.toBeInTheDocument()
     expect(screen.getByTestId('tree-folder-toggle-01-Species')).toBeInTheDocument()
     expect(screen.queryByTestId('tree-folder-toggle-01-Species__dabbling')).not.toBeInTheDocument()
     expect(screen.queryByText('american-wigeon.md')).not.toBeInTheDocument()

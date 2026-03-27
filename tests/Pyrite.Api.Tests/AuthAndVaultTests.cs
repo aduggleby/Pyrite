@@ -69,6 +69,19 @@ public sealed class AuthAndVaultTests(PyriteApplicationFactory factory) : IClass
     }
 
     [Fact]
+    public async Task Spa_routes_with_note_extensions_fall_back_to_index()
+    {
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/view/Projects/Launch%20Plan.md");
+        request.Headers.Accept.ParseAdd("text/html");
+
+        var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+    }
+
+    [Fact]
     public async Task Search_splits_unquoted_terms_and_preserves_quoted_phrases()
     {
         using var client = factory.CreateClientWithCookies();

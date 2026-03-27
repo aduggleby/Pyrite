@@ -9,11 +9,32 @@ vi.mock('./VaultLayout', () => ({
 }))
 
 describe('NoteView', () => {
+  it('shows a spinner while the selected note is loading', () => {
+    useVaultMock.mockReturnValue({
+      notePath: '00-Start-Here.md',
+      noteQuery: {
+        isLoading: true,
+        data: undefined,
+      },
+      noteMeta: { changedExternally: false, dirty: false },
+      selectNote: vi.fn(),
+      toggleTask: vi.fn(),
+      isTaskTogglePending: false,
+    })
+
+    render(<NoteView />)
+
+    expect(screen.getByTestId('note-loading-state')).toBeInTheDocument()
+    expect(screen.getByText('Loading note…')).toBeInTheDocument()
+  })
+
   it('toggles preview task checkboxes through the vault action', () => {
     const toggleTask = vi.fn()
 
     useVaultMock.mockReturnValue({
+      notePath: '00-Start-Here.md',
       noteQuery: {
+        isLoading: false,
         data: {
           path: '00-Start-Here.md',
           tags: [],

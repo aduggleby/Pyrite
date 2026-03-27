@@ -138,6 +138,7 @@ var appVersion = Assembly
     ?? "unknown";
 
 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+var requestLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Pyrite.App");
 var startupOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PyriteOptions>>().Value;
 
 startupLogger.LogInformation(
@@ -165,6 +166,8 @@ startupLogger.LogInformation(
     "pyrite-auth",
     "pyrite-csrf",
     CookieSecurePolicy.SameAsRequest);
+
+var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
 
 app.UseExceptionHandler(exceptionApp =>
 {
@@ -197,19 +200,77 @@ if (app.Environment.IsDevelopment())
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (Directory.Exists(webRoot) && ShouldServeSpaFallback(context))
+    {
+        requestLogger.LogInformation(
+            "Serving SPA fallback for client route: method={Method}, path={Path}, queryString={QueryString}, authenticated={IsAuthenticated}, username={Username}, hasAuthCookie={HasAuthCookie}, referer={Referer}, accept={Accept}",
+            context.Request.Method,
+            context.Request.Path.Value ?? string.Empty,
+            context.Request.QueryString.Value ?? string.Empty,
+            context.User.Identity?.IsAuthenticated == true,
+            context.User.Identity?.Name ?? "<anonymous>",
+            context.Request.Cookies.ContainsKey("pyrite-auth"),
+            context.Request.Headers.Referer.ToString(),
+            context.Request.Headers.Accept.ToString());
+
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        await context.Response.SendFileAsync(Path.Combine(webRoot, "index.html"));
+        return;
+    }
+
+    if (context.Response.StatusCode is StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden or StatusCodes.Status404NotFound)
+    {
+        requestLogger.LogWarning(
+            "Request completed with status={StatusCode}: method={Method}, path={Path}, queryString={QueryString}, authenticated={IsAuthenticated}, username={Username}, hasAuthCookie={HasAuthCookie}, hasCsrfCookie={HasCsrfCookie}, referer={Referer}",
+            context.Response.StatusCode,
+            context.Request.Method,
+            context.Request.Path.Value ?? string.Empty,
+            context.Request.QueryString.Value ?? string.Empty,
+            context.User.Identity?.IsAuthenticated == true,
+            context.User.Identity?.Name ?? "<anonymous>",
+            context.Request.Cookies.ContainsKey("pyrite-auth"),
+            context.Request.Cookies.ContainsKey("pyrite-csrf"),
+            context.Request.Headers.Referer.ToString());
+    }
+});
+
 app.UseFastEndpoints(config =>
 {
     config.Endpoints.RoutePrefix = "api";
 });
 
-var webRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
 if (Directory.Exists(webRoot))
 {
     app.UseDefaultFiles();
     app.UseStaticFiles();
-    app.MapFallbackToFile("index.html");
 }
 
 app.Run();
+
+static bool ShouldServeSpaFallback(HttpContext context)
+{
+    if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound)
+    {
+        return false;
+    }
+
+    if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
+    {
+        return false;
+    }
+
+    if (context.Request.Path.StartsWithSegments("/api"))
+    {
+        return false;
+    }
+
+    var accept = context.Request.Headers.Accept.ToString();
+    return string.IsNullOrWhiteSpace(accept) || accept.Contains("text/html", StringComparison.OrdinalIgnoreCase);
+}
 
 public partial class Program;

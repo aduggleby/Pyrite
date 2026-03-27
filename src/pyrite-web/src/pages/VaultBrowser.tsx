@@ -5,7 +5,7 @@ import { useVault } from './VaultLayout'
 
 export function VaultBrowser() {
   const navigate = useNavigate()
-  const { treeQuery, notePath, selectNote } = useVault()
+  const { treeQuery, notePath, revealFolderRequest, selectNote } = useVault()
 
   return (
     <>
@@ -29,7 +29,12 @@ export function VaultBrowser() {
         </div>
       </div>
       <div className="px-2" data-testid="vault-tree-panel">
-        <VaultTree nodes={treeQuery.data ?? []} activePath={notePath} onSelect={selectNote} />
+        <VaultTree
+          nodes={treeQuery.data ?? []}
+          activePath={notePath}
+          revealRequest={revealFolderRequest}
+          onSelect={selectNote}
+        />
       </div>
     </>
   )

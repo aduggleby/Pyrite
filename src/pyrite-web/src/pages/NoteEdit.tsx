@@ -1,11 +1,16 @@
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
 import { useVault } from './VaultLayout'
+import { NoteLoadingState } from '../components/NoteLoadingState'
 
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
 
 export function NoteEdit() {
-  const { noteQuery, draft, setDraft } = useVault()
+  const { notePath, noteQuery, draft, setDraft } = useVault()
+
+  if (notePath && noteQuery.isLoading) {
+    return <NoteLoadingState />
+  }
 
   if (!noteQuery.data) {
     return (

@@ -1,9 +1,10 @@
 import { useVault } from './VaultLayout'
+import { NoteLoadingState } from '../components/NoteLoadingState'
 
 const noteSubtitleClass = 'text-xs text-[var(--ink-muted)]'
 
 export function NoteView() {
-  const { noteQuery, noteMeta, selectNote, toggleTask, isTaskTogglePending } = useVault()
+  const { notePath, noteQuery, noteMeta, selectNote, toggleTask, isTaskTogglePending } = useVault()
 
   if (noteMeta.changedExternally) {
     return (
@@ -22,6 +23,10 @@ export function NoteView() {
   return renderNote()
 
   function renderNote() {
+    if (notePath && noteQuery.isLoading) {
+      return <NoteLoadingState />
+    }
+
     if (!noteQuery.data) {
       return (
         <div className="grid min-h-[50svh] place-items-center px-4 text-center text-[var(--ink-muted)]">

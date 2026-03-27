@@ -25,10 +25,12 @@ interface VaultContext {
   noteQuery: ReturnType<typeof useQuery<Awaited<ReturnType<typeof fetchNote>>>>
   noteStatusQuery: ReturnType<typeof useQuery<Awaited<ReturnType<typeof fetchNoteStatus>>>>
   treeQuery: ReturnType<typeof useQuery<Awaited<ReturnType<typeof fetchVaultTree>>>>
+  revealFolderRequest: { path: string; key: number } | null
   draft: string
   setDraft: (value: string | ((prev: string) => string)) => void
   noteMeta: { changedExternally: boolean; dirty: boolean }
   selectNote: (path: string) => void
+  revealFolder: (path: string) => void
   toggleTask: (taskIndex: number, isCompleted: boolean) => void
   isTaskTogglePending: boolean
   uploadMutation: ReturnType<typeof useMutation>
@@ -44,6 +46,7 @@ export function VaultLayout() {
   const [draft, setDraft] = useState('')
   const [mergePreview, setMergePreview] = useState<MergePreviewResponse | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [revealFolderRequest, setRevealFolderRequest] = useState<{ path: string; key: number } | null>(null)
 
   const viewWithPathMatch = matchRoute({ to: '/view/$notePath', fuzzy: false })
   const editWithPathMatch = matchRoute({ to: '/edit/$notePath', fuzzy: false })
@@ -169,6 +172,12 @@ export function VaultLayout() {
     void navigate({ to: '/view/$notePath', params: { notePath: path } })
   }
 
+  function revealFolder(path: string) {
+    setMenuOpen(false)
+    setRevealFolderRequest({ path, key: Date.now() })
+    void navigate({ to: '/' })
+  }
+
   async function persistNoteContent(content: string, onSuccess?: () => void) {
     if (!noteQuery.data) {
       return
@@ -189,8 +198,8 @@ export function VaultLayout() {
   const headerTitle = (() => {
     switch (activeTab) {
       case 'vault': return 'Pyrite'
-      case 'view': return formatHeaderPath(noteQuery.data?.path) ?? 'View'
-      case 'edit': return formatHeaderPath(noteQuery.data?.path) ?? 'Edit'
+      case 'view': return noteQuery.data?.path ?? 'View'
+      case 'edit': return noteQuery.data?.path ?? 'Edit'
       case 'search': return 'Search'
     }
   })()
@@ -259,10 +268,12 @@ export function VaultLayout() {
     noteQuery: noteQuery as VaultContext['noteQuery'],
     noteStatusQuery: noteStatusQuery as VaultContext['noteStatusQuery'],
     treeQuery: treeQuery as VaultContext['treeQuery'],
+    revealFolderRequest,
     draft,
     setDraft,
     noteMeta,
     selectNote,
+    revealFolder,
     toggleTask: (taskIndex, isCompleted) => taskToggleMutation.mutate({ taskIndex, isCompleted }),
     isTaskTogglePending: taskToggleMutation.isPending,
     uploadMutation: uploadMutation as VaultContext['uploadMutation'],
@@ -277,7 +288,9 @@ export function VaultLayout() {
               className="font-['Newsreader'] text-[1.05rem] font-semibold leading-tight"
               data-testid={activeTab === 'view' || activeTab === 'edit' ? 'note-title' : undefined}
             >
-              {headerTitle}
+              {activeTab === 'view' || activeTab === 'edit'
+                ? renderHeaderBreadcrumbs(headerTitle, revealFolder)
+                : headerTitle}
             </h1>
             <div className="flex items-center gap-1">
               {(activeTab === 'view' || activeTab === 'edit') && noteQuery.data ? (
@@ -403,13 +416,29 @@ function toggleTaskAtIndex(content: string, taskIndex: number, isCompleted: bool
   })
 }
 
-function formatHeaderPath(notePath?: string) {
-  if (!notePath) {
-    return null
-  }
+function renderHeaderBreadcrumbs(notePath: string, onRevealFolder: (path: string) => void) {
+  const segments = notePath.split('/').filter(Boolean)
 
-  return notePath
-    .split('/')
-    .map((segment) => segment.replace(/\.md$/i, ''))
-    .join(' / ')
+  return segments.map((segment, index) => {
+    const isLast = index === segments.length - 1
+    const folderPath = segments.slice(0, index + 1).join('/')
+    const label = isLast ? segment.replace(/\.md$/i, '') : segment
+
+    return (
+      <span key={folderPath}>
+        {index > 0 ? <span className="mx-1.5 text-[var(--ink-muted)]">/</span> : null}
+        {isLast ? (
+          <span>{label}</span>
+        ) : (
+          <button
+            className="rounded-[var(--radius)] text-[var(--accent)] transition-colors hover:text-[var(--accent-light)]"
+            type="button"
+            onClick={() => onRevealFolder(folderPath)}
+          >
+            {label}
+          </button>
+        )}
+      </span>
+    )
+  })
 }
