@@ -1,6 +1,6 @@
 # Pyrite
 
-[![Version](https://img.shields.io/badge/version-0.1.3-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.4-blue.svg)](CHANGELOG.md)
 
 A single-user, mobile-first, self-hosted markdown vault editor. Mount an existing markdown vault, edit notes in place, and keep the filesystem as the single source of truth.
 
