@@ -14,9 +14,12 @@ public sealed class AuthAndVaultTests(PyriteApplicationFactory factory) : IClass
     [Fact]
     public void HashPassword_matches_documented_openssl_value()
     {
-        PasswordHashService.HashPassword("password")
+        const string password = "marsh-heron-cinder-4817";
+        const string documentedOpenSslHash = "7971eb89fa90ed40b57be4a529cd66812d4ef0be80e4f0089e5cdba42eacb353";
+
+        PasswordHashService.HashPassword(password)
             .Should()
-            .Be("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+            .Be(documentedOpenSslHash);
     }
 
     [Fact]

@@ -1,39 +1,38 @@
-Build started at 2026-03-26 15:15:31
+Build started at 2026-03-27 10:36:47
 ------------------------------------------------------------
   → Claude permission granted via ando.config
   Analyzing changes...
   Generating commit message...
   Generated commit message:
-  Committed: docs: add version badge to README and update build log
-  → Claude permission granted via ando.config
-⚠ You have uncommitted changes.
-  Running commit...
-  → Claude permission granted via ando.config
-  Analyzing changes...
-  Generating commit message...
-  Generated commit message:
-  Committed: chore(build): update ANDO build log with commit and sync progress
-  Detecting projects...
-  Detected projects:
-⚠   ./tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj: no version found
-  Bumping patch: 0.1.2 → 0.1.3
-  Updating project versions:
-  Changes since tag v0.1.2:
-  Claude is updating changelog files...
-  Updating version badges:
-  Committed: Bump version to 0.1.3
-  → Claude permission granted via ando.config
-  Analyzing 3 commit(s) since v0.1.2...
-est .NET SDK version: 10.0
+ND operation in build.csando: Docker.Build
+  → DIND enabled via --dind flag
+  Container: ando-pyrite-e1912cd8
+  → Reusing running container: ando-pyrite-e1912cd8
+  Syncing project files to container...
+  → Creating tar archive of project using git ls-files with null-delimited list
+  → Project files copied to container successfully
+  → Executing: docker exec d68460b4a801 rm -rf /workspace/artifacts
+  →   Timeout: 300000ms
+  → Executing: docker exec d68460b4a801 mkdir -p /workspace/artifacts
+  →   Timeout: 300000ms
+
+Workflow: build
+Script:   /home/alex/Source/Pyrite/build.csando
+Steps:    8
+
+▶ [1/8] Info: Building Pyrite version: 0.1.3
+▶ [2/8] Dotnet.Restore (Pyrite.Api.Tests)
+  → Fetching latest .NET SDK version from release metadata...
+  → Latest .NET SDK version: 10.0
   → Executing: bash -c "command -v dotnet >/dev/null && dotnet --version | grep -q '^10.0\.'"
   →   Timeout: 300000ms
   → .NET SDK 10.0 already installed
   → Executing: dotnet restore ./tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj
   →   Timeout: 300000ms
     Determining projects to restore...
-    Restored /workspace/tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj (in 405 ms).
-    Restored /workspace/src/Pyrite.Api/Pyrite.Api.csproj (in 400 ms).
-✔ Dotnet.Restore (Pyrite.Api.Tests)  02.060s
+    Restored /workspace/tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj (in 332 ms).
+    Restored /workspace/src/Pyrite.Api/Pyrite.Api.csproj (in 331 ms).
+✔ Dotnet.Restore (Pyrite.Api.Tests)  02.019s
 ▶ [3/8] Dotnet.Build (Pyrite.Api)
   → Executing: dotnet build ./src/Pyrite.Api/Pyrite.Api.csproj -c Release --no-restore
   →   Timeout: 300000ms
@@ -43,8 +42,8 @@ est .NET SDK version: 10.0
       0 Warning(s)
       0 Error(s)
   
-  Time Elapsed 00:00:02.83
-✔ Dotnet.Build (Pyrite.Api)  03.113s
+  Time Elapsed 00:00:02.87
+✔ Dotnet.Build (Pyrite.Api)  03.132s
 ▶ [4/8] Dotnet.Test (Pyrite.Api.Tests)
   → Executing: dotnet test ./tests/Pyrite.Api.Tests/Pyrite.Api.Tests.csproj -c Release --no-restore
   →   Timeout: 300000ms
@@ -56,54 +55,59 @@ est .NET SDK version: 10.0
   Starting test execution, please wait...
   A total of 1 test files matched the specified pattern.
   
-  Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 553 ms - Pyrite.Api.Tests.dll (net10.0)
-✔ Dotnet.Test (Pyrite.Api.Tests)  02.256s
+  Passed!  - Failed:     0, Passed:     7, Skipped:     0, Total:     7, Duration: 446 ms - Pyrite.Api.Tests.dll (net10.0)
+✔ Dotnet.Test (Pyrite.Api.Tests)  02.027s
 ▶ [5/8] Node.Install (v22)
   → Executing: bash -c "if command -v node >/dev/null && node -v | grep -q '^v22\.'; then echo 'Node.js v22 already installed'; else apt-get update && apt-get install -y curl ca-certificates && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs; fi"
   →   Timeout: 300000ms
   Node.js v22 already installed
-✔ Node.Install (v22)  00.131s
+✔ Node.Install (v22)  00.135s
 ▶ [6/8] Npm.Ci (pyrite-web)
   → Executing: npm ci
   →   Working directory: ./src/pyrite-web
   →   Timeout: 300000ms
   
-  added 399 packages, and audited 400 packages in 2s
+  added 399 packages, and audited 400 packages in 3s
   
   92 packages are looking for funding
     run `npm fund` for details
   
-  found 0 vulnerabilities
-✔ Npm.Ci (pyrite-web)  02.079s
+  5 moderate severity vulnerabilities
+  
+  To address all issues (including breaking changes), run:
+    npm audit fix --force
+  
+  Run `npm audit` for details.
+✔ Npm.Ci (pyrite-web)  02.946s
 ▶ [7/8] Npm.Test (pyrite-web)
   → Executing: npm test
   →   Working directory: ./src/pyrite-web
   →   Timeout: 300000ms
   
-  > pyrite-web@0.1.2 test
+  > pyrite-web@0.1.3 test
   > vitest run
   
   
   [1m[46m RUN [49m[22m [36mv4.1.1 [39m[90m/workspace/src/pyrite-web[39m
   
-   [32m✓[39m src/pages/NoteView.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 82[2mms[22m[39m
-   [32m✓[39m src/pages/LoginPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 147[2mms[22m[39m
-   [32m✓[39m src/components/VaultTree.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 134[2mms[22m[39m
-   [32m✓[39m src/App.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 114[2mms[22m[39m
-   [32m✓[39m src/components/MergeReviewDialog.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 245[2mms[22m[39m
+   [32m✓[39m src/pages/NoteView.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 85[2mms[22m[39m
+   [32m✓[39m src/pages/LoginPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 144[2mms[22m[39m
+   [32m✓[39m src/components/VaultTree.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 119[2mms[22m[39m
+   [32m✓[39m src/App.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 112[2mms[22m[39m
+   [32m✓[39m src/components/MergeReviewDialog.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 231[2mms[22m[39m
   
   [2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
   [2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
-  [2m   Start at [22m 14:15:43
-  [2m   Duration [22m 805ms[2m (transform 211ms, setup 212ms, import 599ms, tests 722ms, environment 1.64s)[22m
+  [2m   Start at [22m 09:36:59
+  [2m   Duration [22m 779ms[2m (transform 185ms, setup 148ms, import 622ms, tests 691ms, environment 1.64s)[22m
   
-✔ Npm.Test (pyrite-web)  01.247s
+✔ Npm.Test (pyrite-web)  01.214s
 ▶ [8/8] Npm.Build (pyrite-web)
   → Executing: npm run build
   →   Working directory: ./src/pyrite-web
   →   Timeout: 300000ms
   
-  > pyrite-web@0.1.2 build
+  > pyrite-web@0.1.3 build
   > tsc -b && vite build
   
   vite v8.0.2 building client environment for production...
@@ -111,21 +115,21 @@ est .NET SDK version: 10.0
   transforming...✓ 1891 modules transformed.
   rendering chunks...
   computing gzip size...
-  ../Pyrite.Api/wwwroot/index.html                   0.46 kB │ gzip:   0.29 kB
+  ../Pyrite.Api/wwwroot/index.html                   0.45 kB │ gzip:   0.29 kB
   ../Pyrite.Api/wwwroot/assets/index-Nlk7FOT3.css   22.08 kB │ gzip:   5.03 kB
   ../Pyrite.Api/wwwroot/assets/index-II9EIk7x.js   970.03 kB │ gzip: 320.44 kB
   
-  ✓ built in 270ms
+  ✓ built in 278ms
   [plugin builtin:vite-reporter] 
   (!) Some chunks are larger than 500 kB after minification. Consider:
   - Using dynamic import() to code-split the application
   - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
   - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✔ Npm.Build (pyrite-web)  02.087s
+✔ Npm.Build (pyrite-web)  01.967s
 
-✔ SUCCESS  8 steps completed  12.979s
+✔ SUCCESS  8 steps completed  13.445s
 
   → No artifacts registered for copying
   → No zipped artifacts registered for copying
 ------------------------------------------------------------
-Build finished at 2026-03-26 15:15:46
+Build finished at 2026-03-27 10:37:02

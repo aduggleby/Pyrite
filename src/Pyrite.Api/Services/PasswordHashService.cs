@@ -11,12 +11,23 @@ public sealed class PasswordHashService(IOptions<PyriteOptions> options)
 
     public bool MatchesConfiguredPassword(string username, string password)
     {
-        if (!string.Equals(username, _options.Auth.Username, StringComparison.Ordinal))
-        {
-            return false;
-        }
+        return DiagnoseMatch(username, password).IsMatch;
+    }
 
-        return string.Equals(HashPassword(password), _options.Auth.PasswordSha256, StringComparison.Ordinal);
+    public PasswordMatchDiagnostics DiagnoseMatch(string username, string password)
+    {
+        var hashedPassword = HashPassword(password);
+        var usernameMatches = string.Equals(username, _options.Auth.Username, StringComparison.Ordinal);
+        var hashMatches = string.Equals(hashedPassword, _options.Auth.PasswordSha256, StringComparison.Ordinal);
+
+        return new PasswordMatchDiagnostics(
+            usernameMatches && hashMatches,
+            usernameMatches,
+            hashMatches,
+            _options.Auth.Username,
+            username,
+            _options.Auth.PasswordSha256,
+            hashedPassword);
     }
 
     public static string HashPassword(string password)
@@ -29,4 +40,33 @@ public sealed class PasswordHashService(IOptions<PyriteOptions> options)
     {
         return hash.Length == 64 && hash.All(c => char.IsAsciiHexDigit(c)) && hash == hash.ToLowerInvariant();
     }
+
+    public static string ToHashFingerprint(string hash)
+    {
+        if (string.IsNullOrEmpty(hash))
+        {
+            return "<empty>";
+        }
+
+        if (hash.Length <= 12)
+        {
+            return hash;
+        }
+
+        return $"{hash[..6]}...{hash[^6..]}";
+    }
+
+    public static string DescribeValue(string value)
+    {
+        return $"len={value.Length}, leadingWhitespace={char.IsWhiteSpace(value.FirstOrDefault())}, trailingWhitespace={char.IsWhiteSpace(value.LastOrDefault())}, containsWhitespace={value.Any(char.IsWhiteSpace)}, startsWithQuote={(value.StartsWith('\"') || value.StartsWith('\''))}, endsWithQuote={(value.EndsWith('\"') || value.EndsWith('\''))}";
+    }
 }
+
+public sealed record PasswordMatchDiagnostics(
+    bool IsMatch,
+    bool UsernameMatches,
+    bool PasswordHashMatches,
+    string ConfiguredUsername,
+    string SuppliedUsername,
+    string ConfiguredPasswordHash,
+    string SuppliedPasswordHash);

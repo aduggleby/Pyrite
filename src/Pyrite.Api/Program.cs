@@ -114,6 +114,19 @@ builder.Services.AddSingleton<SearchService>();
 
 var app = builder.Build();
 
+var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+var startupOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PyriteOptions>>().Value;
+
+startupLogger.LogInformation(
+    "Pyrite starting: environment={Environment}, vaultRoot={VaultRoot}, authUsername={AuthUsername}, authUsernameDetails={AuthUsernameDetails}, authHashFingerprint={AuthHashFingerprint}, authHashDetails={AuthHashDetails}, logsDirectory={LogsDirectory}",
+    app.Environment.EnvironmentName,
+    startupOptions.VaultRoot,
+    startupOptions.Auth.Username,
+    PasswordHashService.DescribeValue(startupOptions.Auth.Username),
+    PasswordHashService.ToHashFingerprint(startupOptions.Auth.PasswordSha256),
+    PasswordHashService.DescribeValue(startupOptions.Auth.PasswordSha256),
+    appLogsDirectory);
+
 app.UseExceptionHandler(exceptionApp =>
 {
     exceptionApp.Run(async context =>
