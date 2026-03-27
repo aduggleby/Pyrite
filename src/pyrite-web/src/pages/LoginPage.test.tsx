@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LoginPage } from './LoginPage'
 
 const navigateMock = vi.fn()
@@ -36,7 +36,24 @@ vi.mock('../lib/api', () => ({
   developmentLogin: () => developmentLoginMock(),
 }))
 
+afterEach(() => {
+  cleanup()
+})
+
 describe('LoginPage', () => {
+  it('toggles password visibility', () => {
+    render(<LoginPage />)
+
+    const passwordInput = screen.getByPlaceholderText('Enter password')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(passwordInput).toHaveAttribute('type', 'text')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+  })
+
   it('submits credentials and navigates after success', async () => {
     loginMock.mockResolvedValue({ isAuthenticated: true, username: 'alex' })
 

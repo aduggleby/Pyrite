@@ -3,6 +3,7 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Pyrite.Api.Configuration;
 using Pyrite.Api.Services;
@@ -53,13 +54,26 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost;
+
+    // Pyrite is commonly deployed behind a user-managed reverse proxy.
+    // Accept forwarded headers from that proxy without requiring a static allowlist.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-PYRITE-CSRF";
-    options.Cookie.Name = builder.Environment.IsDevelopment() ? "pyrite-csrf" : "__Host-pyrite-csrf";
+    options.Cookie.Name = "pyrite-csrf";
     options.Cookie.HttpOnly = false;
     options.Cookie.SameSite = SameSiteMode.Strict;
-    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddRateLimiter(options =>
@@ -77,10 +91,10 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = builder.Environment.IsDevelopment() ? "pyrite-auth" : "__Host-pyrite-auth";
+        options.Cookie.Name = "pyrite-auth";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
         options.SlidingExpiration = true;
         options.Events.OnRedirectToLogin = context =>
@@ -128,24 +142,29 @@ var startupOptions = app.Services.GetRequiredService<Microsoft.Extensions.Option
 
 startupLogger.LogInformation(
     """
+
     ██████  ██    ██ ██████  ██ ████████ ███████ 
     ██   ██  ██  ██  ██   ██ ██    ██    ██      
     ██████    ████   ██████  ██    ██    █████   
     ██         ██    ██   ██ ██    ██    ██      
     ██         ██    ██   ██ ██    ██    ███████
+
     """);
 
 startupLogger.LogInformation("Pyrite version {AppVersion}", appVersion);
 
 startupLogger.LogInformation(
-    "Pyrite starting: environment={Environment}, vaultRoot={VaultRoot}, authUsername={AuthUsername}, authUsernameDetails={AuthUsernameDetails}, authHashFingerprint={AuthHashFingerprint}, authHashDetails={AuthHashDetails}, logsDirectory={LogsDirectory}",
+    "Pyrite starting: environment={Environment}, vaultRoot={VaultRoot}, authUsername={AuthUsername}, authUsernameDetails={AuthUsernameDetails}, authHashFingerprint={AuthHashFingerprint}, authHashDetails={AuthHashDetails}, logsDirectory={LogsDirectory}, authCookieName={AuthCookieName}, csrfCookieName={CsrfCookieName}, cookieSecurePolicy={CookieSecurePolicy}",
     app.Environment.EnvironmentName,
     startupOptions.VaultRoot,
     startupOptions.Auth.Username,
     PasswordHashService.DescribeValue(startupOptions.Auth.Username),
     PasswordHashService.ToHashFingerprint(startupOptions.Auth.PasswordSha256),
     PasswordHashService.DescribeValue(startupOptions.Auth.PasswordSha256),
-    appLogsDirectory);
+    appLogsDirectory,
+    "pyrite-auth",
+    "pyrite-csrf",
+    CookieSecurePolicy.SameAsRequest);
 
 app.UseExceptionHandler(exceptionApp =>
 {
@@ -168,15 +187,13 @@ app.UseExceptionHandler(exceptionApp =>
     });
 });
 
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseCors("DevClient");
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

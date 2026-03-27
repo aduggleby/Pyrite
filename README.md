@@ -18,6 +18,7 @@ Use the Custom App (Docker Compose) option in TrueNAS. Replace the image, host p
 services:
   pyrite:
     image: ghcr.io/aduggleby/pyrite:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       PYRITE__VAULTROOT: /vault
