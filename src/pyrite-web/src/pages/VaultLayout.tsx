@@ -283,16 +283,16 @@ export function VaultLayout() {
     <>
       <VaultCtx.Provider value={ctx}>
         <main className="min-h-svh bg-[radial-gradient(circle_at_top,rgba(210,166,121,0.18),transparent_42%),linear-gradient(180deg,var(--parchment),var(--parchment-dark))] text-[var(--ink)]">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] bg-[rgba(250,246,241,0.88)] px-3 py-2 backdrop-blur-sm">
+          <header className="sticky top-0 z-20 flex items-center border-b border-[var(--line)] bg-[rgba(250,246,241,0.88)] px-3 py-2 backdrop-blur-sm">
             <h1
-              className="font-['Newsreader'] text-[1.05rem] font-semibold leading-tight"
+              className="flex min-w-0 flex-1 justify-end overflow-hidden pr-3 font-['Newsreader'] text-[1.05rem] font-semibold leading-tight text-right"
               data-testid={activeTab === 'view' || activeTab === 'edit' ? 'note-title' : undefined}
             >
               {activeTab === 'view' || activeTab === 'edit'
                 ? renderHeaderBreadcrumbs(headerTitle, revealFolder)
                 : headerTitle}
             </h1>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               {(activeTab === 'view' || activeTab === 'edit') && noteQuery.data ? (
                 <>
                   {activeTab === 'view' ? (
@@ -425,7 +425,7 @@ function renderHeaderBreadcrumbs(notePath: string, onRevealFolder: (path: string
     const label = isLast ? segment.replace(/\.md$/i, '') : segment
 
     return (
-      <span key={folderPath}>
+      <span key={folderPath} className="shrink-0 whitespace-nowrap">
         {index > 0 ? <span className="mx-1.5 text-[var(--ink-muted)]">/</span> : null}
         {isLast ? (
           <span>{label}</span>
