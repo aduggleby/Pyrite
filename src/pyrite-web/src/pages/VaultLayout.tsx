@@ -297,7 +297,8 @@ export function VaultLayout() {
                 <>
                   {activeTab === 'view' ? (
                     <button
-                      className="inline-flex min-h-10 items-center gap-2 rounded-[var(--radius)] bg-[var(--accent)] px-3 py-2 text-sm text-[var(--parchment)] shadow-[var(--paper-shadow)] transition-colors hover:bg-[var(--accent-light)]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-[var(--accent)] text-[var(--parchment)] shadow-[var(--paper-shadow)] transition-colors hover:bg-[var(--accent-light)]"
+                      aria-label="Edit note"
                       data-testid="view-edit-button"
                       type="button"
                       onClick={() =>
@@ -307,19 +308,18 @@ export function VaultLayout() {
                       }
                     >
                       <Pencil size={16} />
-                      Edit
                     </button>
                   ) : null}
                   {activeTab === 'edit' ? (
                     <button
-                      className="inline-flex min-h-10 items-center gap-2 rounded-[var(--radius)] bg-[var(--accent)] px-3 py-2 text-sm text-[var(--parchment)] shadow-[var(--paper-shadow)] transition-colors hover:bg-[var(--accent-light)] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-[var(--accent)] text-[var(--parchment)] shadow-[var(--paper-shadow)] transition-colors hover:bg-[var(--accent-light)] disabled:cursor-not-allowed disabled:opacity-60"
+                      aria-label="Save note"
                       data-testid="edit-save-button"
                       type="button"
                       disabled={!noteMeta.dirty || saveMutation.isPending}
                       onClick={() => saveMutation.mutate()}
                     >
                       <Save size={16} />
-                      Save
                     </button>
                   ) : null}
                   {renderMenuButton(activeTab)}
