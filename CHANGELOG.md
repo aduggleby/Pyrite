@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2026-03-27
+
+### Improved
+- Login page experience
+- Internal improvements
+
 ## [0.1.5] - 2026-03-27
 
 ### Added
