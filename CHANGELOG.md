@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2026-04-06
+
+### Fixed
+- Add table borders in note view
+
+### Improved
+- Loading state styles for notes
+
 ## [0.1.10] - 2026-03-27
 
 ### Added
