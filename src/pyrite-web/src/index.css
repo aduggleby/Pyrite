@@ -163,6 +163,27 @@ a {
   color: var(--ink-light);
 }
 
+.preview-panel table {
+  width: 100%;
+  margin: 0.85rem 0;
+  border-collapse: collapse;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.preview-panel th,
+.preview-panel td {
+  border: 1px solid var(--line-strong);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.preview-panel th {
+  background: rgba(210, 166, 121, 0.16);
+  font-weight: 600;
+}
+
 .cm-editor {
   min-height: 300px;
   font-size: 13px;
