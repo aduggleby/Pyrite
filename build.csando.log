@@ -4,15 +4,15 @@ Build started at 2026-04-06 08:33:54
   Analyzing changes...
   Generating commit message...
   Generated commit message:
-ND operation in build.csando: Docker.Build
-  → DIND enabled via --dind flag
-  Container: ando-pyrite-e1912cd8
-  → Starting existing container: ando-pyrite-e1912cd8
-  → Executing: docker start d68460b4a801
-  →   Timeout: 300000ms
-  d68460b4a801
-  Syncing project files to container...
-  → Creating tar archive of project using git ls-files with null-delimited list
+  Committed: chore(build): update build log and note loading state styles
+  → Claude permission granted via ando.config
+⚠ You have uncommitted changes.
+  Running commit...
+  → Claude permission granted via ando.config
+  Analyzing changes...
+  Generating commit message...
+  Generated commit message:
+ tar archive of project using git ls-files with null-delimited list
   → Project files copied to container successfully
   → Executing: docker exec d68460b4a801 rm -rf /workspace/artifacts
   →   Timeout: 300000ms
